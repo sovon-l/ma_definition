@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="proper.market.api"
+                   id="1"
+                   version="1"
+                   semanticVersion="1.0"
+                   description="for market data transfer"
+                   byteOrder="littleEndian">
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <composite name="groupSizeEncoding" description="Repeating group dimensions" >
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint8" semanticType="NumInGroup"/>
+        </composite>
+        <type name="idString" length="8" primitiveType="char" characterEncoding="ISO_8859_1"/>
+
+        <type name="asset" length="6" primitiveType="char" characterEncoding="US-ASCII"/>
+        <enum name="exchange" encodingType="uint8" description="trading exchange">
+            <validValue name="binance">0</validValue>
+            <validValue name="ftx">1</validValue>
+        </enum>
+        <enum name="symbolType" encodingType="uint8" description="symbol type">
+            <validValue name="spot">0</validValue>
+            <validValue name="future">1</validValue>
+            <validValue name="inverse_future">2</validValue>
+        </enum>
+        <type name="expiry" primitiveType="uint32" presence="optional"/> <!-- intended UNIX ts at s -->
+        <composite name="symbol">
+            <ref name="exchange" type="exchange"/>
+            <ref name="quote" type="asset"/>
+            <ref name="base" type="asset"/>
+            <ref name="symbolType" type="symbolType"/>
+            <ref name="expiry" type="expiry"/>
+        </composite>
+        <set name="orderbook_flags" encodingType="uint8">
+            <choice name="isSnapshot">0</choice>
+        </set>
+        <!-- https://www.fixtrading.org/standards/sbe-online/#decimal-encoding -->
+        <composite name="dec" >
+            <type name="mantissa" primitiveType="int64"/>
+            <type name="exponent" primitiveType="int8"/>
+        </composite>
+    </types>
+    <sbe:message name="placeOrder" id="1">
+        <field name="symbol" id="1" type="symbol"/>
+        <field name="start_timestamp" id="2" type="uint64"/>
+        <!-- work in progress -->
+    <sbe:message name="bboMsg" id="1">
+        <field name="timestamp" id="3" type="uint64" presence="optional"/>
+        <field name="bidPrice" id="4" type="dec"/>
+        <field name="bidSize" id="5" type="dec"/>
+        <field name="askPrice" id="6" type="dec"/>
+        <field name="askSize" id="7" type="dec"/>
+    </sbe:message>
+    <sbe:message name="tradeMsg" id="2">
+        <field name="symbol" id="1" type="symbol"/>
+        <field name="market_timestamp" id="2" type="uint64"/>
+        <group name="trades" id="3" dimensionType="groupSizeEncoding">
+            <field name="price" id="1" type="dec"/>
+            <field name="size" id="2" type="dec"/>
+            <field name="timestamp" id="3" type="uint64"/>
+            <!-- <field name="tradeId" id="4" type="uint32"/> -->
+        </group>
+    </sbe:message>
+    <sbe:message name="orderbookMsg" id="3">
+        <field name="symbol" id="1" type="symbol"/>
+        <field name="market_timestamp" id="2" type="uint64"/>
+        <field name="timestamp" id="3" type="uint64" presence="optional"/>
+        <field name="orderbook_flags" id="4" type="orderbook_flags"/> <!-- golang need human fix after gen -->
+        <group name="depths" id="5" dimensionType="groupSizeEncoding">
+            <field name="price" id="1" type="dec"/>
+            <field name="size" id="2" type="dec"/>
+        </group>
+    </sbe:message>
+
+</sbe:messageSchema>
