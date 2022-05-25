@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
-                   package="proper.market.api"
+                   package="proper.gateway.api"
                    id="1"
                    version="1"
                    semanticVersion="1.0"
-                   description="for market data transfer"
+                   description="for gateway data transfer"
                    byteOrder="littleEndian">
     <types>
         <composite name="messageHeader" description="Message identifiers and length of message root">
@@ -24,58 +24,65 @@
             <validValue name="binance">0</validValue>
             <validValue name="ftx">1</validValue>
         </enum>
-        <enum name="symbolType" encodingType="uint8" description="symbol type">
+        <enum name="instrumentType" encodingType="uint8" description="instrument type">
             <validValue name="spot">0</validValue>
             <validValue name="future">1</validValue>
             <validValue name="inverse_future">2</validValue>
         </enum>
         <type name="expiry" primitiveType="uint32" presence="optional"/> <!-- intended UNIX ts at s -->
-        <composite name="symbol">
+        <composite name="instrument">
             <ref name="exchange" type="exchange"/>
             <ref name="quote" type="asset"/>
             <ref name="base" type="asset"/>
-            <ref name="symbolType" type="symbolType"/>
+            <ref name="instrumentType" type="instrumentType"/>
             <ref name="expiry" type="expiry"/>
         </composite>
-        <set name="orderbook_flags" encodingType="uint8">
-            <choice name="isSnapshot">0</choice>
-        </set>
-        <!-- https://www.fixtrading.org/standards/sbe-online/#decimal-encoding -->
-        <composite name="dec" >
+        <composite name="dec">
             <type name="mantissa" primitiveType="int64"/>
             <type name="exponent" primitiveType="int8"/>
         </composite>
+
+        <composite name="acc_id">
+            <ref name="exchange" type="exchange"/>
+            <ref name="context" type="idString"/>
+        </composite>
+        <enum name="orderType" encodingType="uint8">
+            <validValue name="limit">0</validValue>
+            <validValue name="market">1</validValue>
+            <validValue name="stop">2</validValue>
+        </enum>
+        <set name="order_options" encodingType="uint8">
+            <choice name="reduce_only">0</choice>
+        </set>
+        <enum name="time_in_force" encodingType="uint8">
+            <validValue name="GoodTill">0</validValue>
+            <validValue name="IOC">1</validValue>
+            <validValue name="FOK">2</validValue>
+        </enum>
+        <composite name="simple_order_detail">
+            <ref name="orderType" type="orderType"/>
+            <ref name="instrument" type="instrument"/>
+            <ref name="size" type="dec"/>
+            <ref name="order_options" type="order_options"/>
+
+            <!-- limit order only -->
+            <ref name="price" type="dec" presence="optional"/>
+            <ref name="time_in_force" type="time_in_force" presence="optional"/>
+            <type name="expiry_time" primitiveType="uint32" presence="optional"/>
+
+            <!-- stop order only -->
+            <ref name="trigger" type="dec" presence="optional"/>
+            <ref name="triggered_ordertype" type="orderType" presence="optional"/>
+            <!-- stop order triggered ordertype must be limit / mkt, hence reusing above fields -->            
+        </composite>
     </types>
     <sbe:message name="placeOrder" id="1">
-        <field name="symbol" id="1" type="symbol"/>
-        <field name="start_timestamp" id="2" type="uint64"/>
-        <!-- work in progress -->
-    <sbe:message name="bboMsg" id="1">
-        <field name="timestamp" id="3" type="uint64" presence="optional"/>
-        <field name="bidPrice" id="4" type="dec"/>
-        <field name="bidSize" id="5" type="dec"/>
-        <field name="askPrice" id="6" type="dec"/>
-        <field name="askSize" id="7" type="dec"/>
+        <field name="upstream_order_id" id="1" type="idString"/>
+        <field name="timestamp" id="2" type="uint32"/>
+        <field name="acc_id" id="3" type="acc_id"/>
+        <field name="simple_order_detail" id="4" type="simple_order_detail"/>
     </sbe:message>
-    <sbe:message name="tradeMsg" id="2">
-        <field name="symbol" id="1" type="symbol"/>
-        <field name="market_timestamp" id="2" type="uint64"/>
-        <group name="trades" id="3" dimensionType="groupSizeEncoding">
-            <field name="price" id="1" type="dec"/>
-            <field name="size" id="2" type="dec"/>
-            <field name="timestamp" id="3" type="uint64"/>
-            <!-- <field name="tradeId" id="4" type="uint32"/> -->
-        </group>
+    <sbe:message name="cancelOrder" id="2">
+        <field name="upstream_order_id" id="1" type="idString"/>
     </sbe:message>
-    <sbe:message name="orderbookMsg" id="3">
-        <field name="symbol" id="1" type="symbol"/>
-        <field name="market_timestamp" id="2" type="uint64"/>
-        <field name="timestamp" id="3" type="uint64" presence="optional"/>
-        <field name="orderbook_flags" id="4" type="orderbook_flags"/> <!-- golang need human fix after gen -->
-        <group name="depths" id="5" dimensionType="groupSizeEncoding">
-            <field name="price" id="1" type="dec"/>
-            <field name="size" id="2" type="dec"/>
-        </group>
-    </sbe:message>
-
 </sbe:messageSchema>
