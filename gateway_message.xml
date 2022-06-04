@@ -24,18 +24,16 @@
             <validValue name="binance">0</validValue>
             <validValue name="ftx">1</validValue>
         </enum>
-        <enum name="instrumentType" encodingType="uint8" description="instrument type">
-            <validValue name="spot">0</validValue>
-            <validValue name="future">1</validValue>
-            <validValue name="inverse_future">2</validValue>
-        </enum>
-        <type name="expiry" primitiveType="uint32" presence="optional"/> <!-- intended UNIX ts at s -->
         <composite name="instrument">
             <ref name="exchange" type="exchange"/>
             <ref name="quote" type="asset"/>
             <ref name="base" type="asset"/>
-            <ref name="instrumentType" type="instrumentType"/>
-            <ref name="expiry" type="expiry"/>
+            <enum name="instrumentType" encodingType="uint8" description="instrument type">
+                <validValue name="spot">0</validValue>
+                <validValue name="future">1</validValue>
+                <validValue name="inverse_future">2</validValue>
+            </enum>
+            <type name="expiry" primitiveType="uint32" presence="optional"/> <!-- intended UNIX ts at s -->
         </composite>
         <composite name="dec">
             <type name="mantissa" primitiveType="int64"/>
@@ -51,29 +49,25 @@
             <validValue name="market">1</validValue>
             <validValue name="stop">2</validValue>
         </enum>
-        <set name="order_options" encodingType="uint8">
-            <choice name="reduce_only">0</choice>
-        </set>
-        <enum name="time_in_force" encodingType="uint8">
-            <validValue name="GoodTill">0</validValue>
-            <validValue name="IOC">1</validValue>
-            <validValue name="FOK">2</validValue>
-        </enum>
-        <composite name="simple_order_detail">
+        <composite name="basic_order_detail">
             <ref name="orderType" type="orderType"/>
             <ref name="instrument" type="instrument"/>
-            <ref name="size" type="dec"/>
-            <ref name="order_options" type="order_options"/>
-
-            <!-- limit order only -->
             <ref name="price" type="dec" presence="optional"/>
-            <ref name="time_in_force" type="time_in_force" presence="optional"/>
+            <ref name="amount" type="dec"/>
+            <enum name="time_in_force" encodingType="uint8" presence="optional">
+                <validValue name="GoodTill">0</validValue>
+                <validValue name="IOC">1</validValue>
+                <validValue name="FOK">2</validValue>
+            </enum>
             <type name="expiry_time" primitiveType="uint32" presence="optional"/>
-
-            <!-- stop order only -->
+            <set name="order_options" encodingType="uint8">
+                <choice name="reduce_only">0</choice>
+            </set>
+        </composite>
+        <composite name="simple_order_detail">
+            <ref name="orderType" type="orderType"/>
             <ref name="trigger" type="dec" presence="optional"/>
-            <ref name="triggered_ordertype" type="orderType" presence="optional"/>
-            <!-- stop order triggered ordertype must be limit / mkt, hence reusing above fields -->            
+            <ref name="triggered_ordertype" type="basic_order_detail" presence="optional"/>         
         </composite>
     </types>
     <sbe:message name="placeOrder" id="1">
