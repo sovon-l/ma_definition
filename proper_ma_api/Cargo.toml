@@ -1,0 +1,10 @@
+[package]
+name = "proper_ma_api"
+version = "0.1.0"
+authors = ["sbetool"]
+description = "for ma data transfer"
+edition = "2018"
+
+[lib]
+name = "proper_ma_api"
+path = "src/lib.rs"
