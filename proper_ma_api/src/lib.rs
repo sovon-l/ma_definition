@@ -3,11 +3,11 @@
 #![allow(non_camel_case_types)]
 use ::core::{convert::TryInto};
 
-pub mod orderbook_msg_codec;
 pub mod group_size_encoding_codec;
 pub mod place_order_codec;
 pub mod exchange;
 pub mod trade_msg_codec;
+pub mod quote_msg_codec;
 pub mod simple_order_detail_codec;
 pub mod dec_codec;
 pub mod message_header_codec;
@@ -21,11 +21,11 @@ pub mod cancel_order_codec;
 pub mod instrument_codec;
 pub mod basic_order_detail_codec;
 
-pub use orderbook_msg_codec::*;
 pub use group_size_encoding_codec::*;
 pub use place_order_codec::*;
 pub use exchange::*;
 pub use trade_msg_codec::*;
+pub use quote_msg_codec::*;
 pub use simple_order_detail_codec::*;
 pub use dec_codec::*;
 pub use message_header_codec::*;

@@ -77,7 +77,7 @@
         </composite>
     </types>
     <!-- market -->
-    <sbe:message name="orderbookMsg" id="1">
+    <sbe:message name="quoteMsg" id="1">
         <field name="instrument" id="1" type="instrument"/>
         <field name="marketTimestamp" id="2" type="uint64"/>
         <field name="timestamp" id="3" type="uint64" presence="optional"/>

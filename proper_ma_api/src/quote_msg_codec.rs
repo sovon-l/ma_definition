@@ -12,21 +12,21 @@ pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct OrderbookMsgEncoder<'a> {
+    pub struct QuoteMsgEncoder<'a> {
         buf: WriteBuf<'a>,
         initial_offset: usize,
         offset: usize,
         limit: usize,
     }
 
-    impl<'a> Writer<'a> for OrderbookMsgEncoder<'a> {
+    impl<'a> Writer<'a> for QuoteMsgEncoder<'a> {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             &mut self.buf
         }
     }
 
-    impl<'a> Encoder<'a> for OrderbookMsgEncoder<'a> {
+    impl<'a> Encoder<'a> for QuoteMsgEncoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -38,7 +38,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a> OrderbookMsgEncoder<'a> {
+    impl<'a> QuoteMsgEncoder<'a> {
         pub fn wrap(mut self, buf: WriteBuf<'a>, offset: usize) -> Self {
             let limit = offset + SBE_BLOCK_LENGTH as usize;
             self.buf = buf;
@@ -211,7 +211,7 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct OrderbookMsgDecoder<'a> {
+    pub struct QuoteMsgDecoder<'a> {
         buf: ReadBuf<'a>,
         initial_offset: usize,
         offset: usize,
@@ -220,14 +220,14 @@ pub mod decoder {
         pub acting_version: u16,
     }
 
-    impl<'a> Reader<'a> for OrderbookMsgDecoder<'a> {
+    impl<'a> Reader<'a> for QuoteMsgDecoder<'a> {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             &self.buf
         }
     }
 
-    impl<'a> Decoder<'a> for OrderbookMsgDecoder<'a> {
+    impl<'a> Decoder<'a> for QuoteMsgDecoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -239,7 +239,7 @@ pub mod decoder {
         }
     }
 
-    impl<'a> OrderbookMsgDecoder<'a> {
+    impl<'a> QuoteMsgDecoder<'a> {
         pub fn wrap(
             mut self,
             buf: ReadBuf<'a>,
