@@ -69,7 +69,7 @@ pub mod encoder {
             InstrumentEncoder::default().wrap(self, offset)
         }
 
-        /// primitive field 'market_timestamp'
+        /// primitive field 'marketTimestamp'
         /// - min value: 0
         /// - max value: -2
         /// - null value: -1

@@ -3,18 +3,23 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
+use DecEncoder as PriceEncoder;
+use DecEncoder as AmountEncoder;
+use DecDecoder as PriceDecoder;
+use DecDecoder as AmountDecoder;
+
 pub const ENCODED_LENGTH: usize = 43;
 
 pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct Basic_order_detailEncoder<P> {
+    pub struct BasicOrderDetailEncoder<P> {
         parent: Option<P>,
         offset: usize,
     }
 
-    impl<'a, P> Writer<'a> for Basic_order_detailEncoder<P> where P: Writer<'a> + Default {
+    impl<'a, P> Writer<'a> for BasicOrderDetailEncoder<P> where P: Writer<'a> + Default {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             if let Some(parent) = self.parent.as_mut() {
@@ -25,7 +30,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a, P> Basic_order_detailEncoder<P> where P: Writer<'a> + Default {
+    impl<'a, P> BasicOrderDetailEncoder<P> where P: Writer<'a> + Default {
         pub fn wrap(mut self, parent: P, offset: usize) -> Self {
             self.parent = Some(parent);
             self.offset = offset;
@@ -67,12 +72,12 @@ pub mod encoder {
 
         /// REQUIRED enum
         #[inline]
-        pub fn time_in_force(&mut self, value: Time_in_force) {
+        pub fn time_in_force(&mut self, value: TimeInForce) {
             let offset = self.offset + 37;
             self.get_buf_mut().put_u8_at(offset, value as u8)
         }
 
-        /// primitive field 'expiry_time'
+        /// primitive field 'expiryTime'
         /// - min value: 0
         /// - max value: 4294967294
         /// - null value: 4294967295
@@ -87,7 +92,7 @@ pub mod encoder {
         }
 
         #[inline]
-        pub fn order_options(&mut self, value: Order_options) {
+        pub fn order_options(&mut self, value: OrderOptions) {
             let offset = self.offset + 42;
             self.get_buf_mut().put_u8_at(offset, value.0)
         }
@@ -99,19 +104,19 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct Basic_order_detailDecoder<P> {
+    pub struct BasicOrderDetailDecoder<P> {
         parent: Option<P>,
         offset: usize,
     }
 
-    impl<'a, P> Reader<'a> for Basic_order_detailDecoder<P> where P: Reader<'a> + Default {
+    impl<'a, P> Reader<'a> for BasicOrderDetailDecoder<P> where P: Reader<'a> + Default {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             self.parent.as_ref().expect("parent missing").get_buf()
         }
     }
 
-    impl<'a, P> Basic_order_detailDecoder<P> where P: Reader<'a> + Default {
+    impl<'a, P> BasicOrderDetailDecoder<P> where P: Reader<'a> + Default {
         pub fn wrap(mut self, parent: P, offset: usize) -> Self {
             self.parent = Some(parent);
             self.offset = offset;
@@ -152,7 +157,7 @@ pub mod decoder {
 
         /// REQUIRED enum
         #[inline]
-        pub fn time_in_force(&self) -> Time_in_force {
+        pub fn time_in_force(&self) -> TimeInForce {
             self.get_buf().get_u8_at(self.offset + 37).into()
         }
 
@@ -168,8 +173,8 @@ pub mod decoder {
         }
 
         #[inline]
-        pub fn order_options(&self) -> Order_options {
-            Order_options::new(self.get_buf().get_u8_at(self.offset + 42))
+        pub fn order_options(&self) -> OrderOptions {
+            OrderOptions::new(self.get_buf().get_u8_at(self.offset + 42))
         }
 
     }

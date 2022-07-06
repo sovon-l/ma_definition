@@ -69,7 +69,7 @@ pub mod encoder {
             InstrumentEncoder::default().wrap(self, offset)
         }
 
-        /// primitive field 'market_timestamp'
+        /// primitive field 'marketTimestamp'
         /// - min value: 0
         /// - max value: -2
         /// - null value: -1
@@ -98,7 +98,7 @@ pub mod encoder {
         }
 
         #[inline]
-        pub fn orderbook_flags(&mut self, value: Orderbook_flags) {
+        pub fn orderbook_flags(&mut self, value: OrderbookFlags) {
             let offset = self.offset + 34;
             self.get_buf_mut().put_u8_at(offset, value.0)
         }
@@ -300,8 +300,8 @@ pub mod decoder {
         }
 
         #[inline]
-        pub fn orderbook_flags(&self) -> Orderbook_flags {
-            Orderbook_flags::new(self.get_buf().get_u8_at(self.offset + 34))
+        pub fn orderbook_flags(&self) -> OrderbookFlags {
+            OrderbookFlags::new(self.get_buf().get_u8_at(self.offset + 34))
         }
 
         /// GROUP DECODER

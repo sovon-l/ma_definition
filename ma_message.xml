@@ -31,7 +31,7 @@
             <enum name="instrumentType" encodingType="uint8" description="instrument type">
                 <validValue name="spot">0</validValue>
                 <validValue name="future">1</validValue>
-                <validValue name="inverse_future">2</validValue>
+                <validValue name="inverseFuture">2</validValue>
             </enum>
             <type name="expiry" primitiveType="uint32" presence="optional"/> <!-- intended UNIX ts at s -->
         </composite>
@@ -41,49 +41,47 @@
         </composite>
 
         <!-- market -->
-        <set name="orderbook_flags" encodingType="uint8">
+        <set name="orderbookFlags" encodingType="uint8">
             <choice name="isSnapshot">0</choice>
             <choice name="L1">1</choice>
         </set>
 
         <!-- gateway -->
         <type name="idString" length="8" primitiveType="char" characterEncoding="ISO_8859_1"/>
-        <composite name="acc_id">
+        <composite name="accId">
             <ref name="exchange" type="exchange"/>
             <ref name="context" type="idString"/>
         </composite>
         <enum name="orderType" encodingType="uint8">
             <validValue name="limit">0</validValue>
             <validValue name="market">1</validValue>
-            <validValue name="stop">2</validValue>
         </enum>
-        <composite name="basic_order_detail">
+        <composite name="basicOrderDetail">
             <ref name="orderType" type="orderType"/>
             <ref name="instrument" type="instrument"/>
             <ref name="price" type="dec" presence="optional"/>
             <ref name="amount" type="dec"/>
-            <enum name="time_in_force" encodingType="uint8" presence="optional">
+            <enum name="timeInForce" encodingType="uint8" presence="optional">
                 <validValue name="GoodTill">0</validValue>
                 <validValue name="IOC">1</validValue>
                 <validValue name="FOK">2</validValue>
             </enum>
-            <type name="expiry_time" primitiveType="uint32" presence="optional"/>
-            <set name="order_options" encodingType="uint8">
-                <choice name="reduce_only">0</choice>
+            <type name="expiryTime" primitiveType="uint32" presence="optional"/>
+            <set name="orderOptions" encodingType="uint8">
+                <choice name="reduceOnly">0</choice>
             </set>
         </composite>
-        <composite name="simple_order_detail">
-            <ref name="orderType" type="orderType"/>
+        <composite name="simpleOrderDetail">
+            <ref name="execute" type="basicOrderDetail"/>         
             <ref name="trigger" type="dec" presence="optional"/>
-            <ref name="triggered_ordertype" type="basic_order_detail" presence="optional"/>         
         </composite>
     </types>
     <!-- market -->
     <sbe:message name="orderbookMsg" id="1">
         <field name="instrument" id="1" type="instrument"/>
-        <field name="market_timestamp" id="2" type="uint64"/>
+        <field name="marketTimestamp" id="2" type="uint64"/>
         <field name="timestamp" id="3" type="uint64" presence="optional"/>
-        <field name="orderbook_flags" id="4" type="orderbook_flags"/> <!-- golang need human fix after gen -->
+        <field name="orderbookFlags" id="4" type="orderbookFlags"/> <!-- golang need human fix after gen -->
         <group name="depths" id="5" dimensionType="groupSizeEncoding">
             <field name="price" id="1" type="dec"/>
             <field name="size" id="2" type="dec"/>
@@ -91,7 +89,7 @@
     </sbe:message>
     <sbe:message name="tradeMsg" id="2">
         <field name="instrument" id="1" type="instrument"/>
-        <field name="market_timestamp" id="2" type="uint64"/>
+        <field name="marketTimestamp" id="2" type="uint64"/>
         <group name="trades" id="3" dimensionType="groupSizeEncoding">
             <field name="price" id="1" type="dec"/>
             <field name="size" id="2" type="dec"/>
@@ -102,12 +100,12 @@
 
     <!-- gateway -->
     <sbe:message name="placeOrder" id="4">
-        <field name="upstream_order_id" id="1" type="idString"/>
+        <field name="upstreamOrderId" id="1" type="idString"/>
         <field name="timestamp" id="2" type="uint32"/>
-        <field name="acc_id" id="3" type="acc_id"/>
-        <field name="simple_order_detail" id="4" type="simple_order_detail"/>
+        <field name="accId" id="3" type="accId"/>
+        <field name="simpleOrderDetail" id="4" type="simpleOrderDetail"/>
     </sbe:message>
     <sbe:message name="cancelOrder" id="5">
-        <field name="upstream_order_id" id="1" type="idString"/>
+        <field name="upstreamOrderId" id="1" type="idString"/>
     </sbe:message>
 </sbe:messageSchema>

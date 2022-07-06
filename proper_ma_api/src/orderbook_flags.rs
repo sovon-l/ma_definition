@@ -1,9 +1,9 @@
 #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Orderbook_flags(pub u8);
-impl Orderbook_flags {
+pub struct OrderbookFlags(pub u8);
+impl OrderbookFlags {
     #[inline]
     pub fn new(value: u8) -> Self {
-        Orderbook_flags(value)
+        OrderbookFlags(value)
     }
 
     #[inline]
@@ -42,10 +42,10 @@ impl Orderbook_flags {
         self
     }
 }
-impl core::fmt::Debug for Orderbook_flags {
+impl core::fmt::Debug for OrderbookFlags {
     #[inline]
     fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(fmt, "Orderbook_flags[is_snapshot(0)={},l1(1)={}]",
+        write!(fmt, "OrderbookFlags[is_snapshot(0)={},l1(1)={}]",
             self.get_is_snapshot(),self.get_l1(),)
     }
 }

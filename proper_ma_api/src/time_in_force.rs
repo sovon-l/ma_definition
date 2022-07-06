@@ -1,16 +1,16 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
-pub enum Time_in_force {
+pub enum TimeInForce {
     GoodTill = 0x0_u8, 
     IOC = 0x1_u8, 
     FOK = 0x2_u8, 
     NullVal = 0xff_u8, 
 }
-impl Default for Time_in_force {
+impl Default for TimeInForce {
     #[inline]
-    fn default() -> Self { Time_in_force::NullVal }
+    fn default() -> Self { TimeInForce::NullVal }
 }
-impl From<u8> for Time_in_force {
+impl From<u8> for TimeInForce {
     #[inline]
     fn from(v: u8) -> Self {
         match v {

@@ -62,7 +62,7 @@ pub mod encoder {
             header
         }
 
-        /// primitive array field 'upstream_order_id'
+        /// primitive array field 'upstreamOrderId'
         /// - min value: 32
         /// - max value: 126
         /// - null value: 0

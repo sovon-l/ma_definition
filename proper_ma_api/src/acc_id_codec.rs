@@ -9,12 +9,12 @@ pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct Acc_idEncoder<P> {
+    pub struct AccIdEncoder<P> {
         parent: Option<P>,
         offset: usize,
     }
 
-    impl<'a, P> Writer<'a> for Acc_idEncoder<P> where P: Writer<'a> + Default {
+    impl<'a, P> Writer<'a> for AccIdEncoder<P> where P: Writer<'a> + Default {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             if let Some(parent) = self.parent.as_mut() {
@@ -25,7 +25,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a, P> Acc_idEncoder<P> where P: Writer<'a> + Default {
+    impl<'a, P> AccIdEncoder<P> where P: Writer<'a> + Default {
         pub fn wrap(mut self, parent: P, offset: usize) -> Self {
             self.parent = Some(parent);
             self.offset = offset;
@@ -74,19 +74,19 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct Acc_idDecoder<P> {
+    pub struct AccIdDecoder<P> {
         parent: Option<P>,
         offset: usize,
     }
 
-    impl<'a, P> Reader<'a> for Acc_idDecoder<P> where P: Reader<'a> + Default {
+    impl<'a, P> Reader<'a> for AccIdDecoder<P> where P: Reader<'a> + Default {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             self.parent.as_ref().expect("parent missing").get_buf()
         }
     }
 
-    impl<'a, P> Acc_idDecoder<P> where P: Reader<'a> + Default {
+    impl<'a, P> AccIdDecoder<P> where P: Reader<'a> + Default {
         pub fn wrap(mut self, parent: P, offset: usize) -> Self {
             self.parent = Some(parent);
             self.offset = offset;

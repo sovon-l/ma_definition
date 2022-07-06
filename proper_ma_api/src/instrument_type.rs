@@ -3,7 +3,7 @@
 pub enum InstrumentType {
     spot = 0x0_u8, 
     future = 0x1_u8, 
-    inverse_future = 0x2_u8, 
+    inverseFuture = 0x2_u8, 
     NullVal = 0xff_u8, 
 }
 impl Default for InstrumentType {
@@ -16,7 +16,7 @@ impl From<u8> for InstrumentType {
         match v {
             0x0_u8 => Self::spot, 
             0x1_u8 => Self::future, 
-            0x2_u8 => Self::inverse_future, 
+            0x2_u8 => Self::inverseFuture, 
             _ => Self::NullVal,
         }
     }

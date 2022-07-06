@@ -3,18 +3,23 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
-pub const ENCODED_LENGTH: usize = 53;
+use DecEncoder as TriggerEncoder;
+use DecDecoder as TriggerDecoder;
+use BasicOrderDetailEncoder as ExecuteEncoder;
+use BasicOrderDetailDecoder as ExecuteDecoder;
+
+pub const ENCODED_LENGTH: usize = 52;
 
 pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct Simple_order_detailEncoder<P> {
+    pub struct SimpleOrderDetailEncoder<P> {
         parent: Option<P>,
         offset: usize,
     }
 
-    impl<'a, P> Writer<'a> for Simple_order_detailEncoder<P> where P: Writer<'a> + Default {
+    impl<'a, P> Writer<'a> for SimpleOrderDetailEncoder<P> where P: Writer<'a> + Default {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             if let Some(parent) = self.parent.as_mut() {
@@ -25,7 +30,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a, P> Simple_order_detailEncoder<P> where P: Writer<'a> + Default {
+    impl<'a, P> SimpleOrderDetailEncoder<P> where P: Writer<'a> + Default {
         pub fn wrap(mut self, parent: P, offset: usize) -> Self {
             self.parent = Some(parent);
             self.offset = offset;
@@ -37,25 +42,18 @@ pub mod encoder {
             self.parent.take().ok_or(SbeErr::ParentNotSet)
         }
 
-        /// REQUIRED enum
+        /// COMPOSITE ENCODER
         #[inline]
-        pub fn order_type(&mut self, value: OrderType) {
+        pub fn execute_encoder(self) -> ExecuteEncoder<Self> {
             let offset = self.offset;
-            self.get_buf_mut().put_u8_at(offset, value as u8)
+            ExecuteEncoder::default().wrap(self, offset)
         }
 
         /// COMPOSITE ENCODER
         #[inline]
         pub fn trigger_encoder(self) -> TriggerEncoder<Self> {
-            let offset = self.offset + 1;
+            let offset = self.offset + 43;
             TriggerEncoder::default().wrap(self, offset)
-        }
-
-        /// COMPOSITE ENCODER
-        #[inline]
-        pub fn triggered_ordertype_encoder(self) -> Triggered_ordertypeEncoder<Self> {
-            let offset = self.offset + 10;
-            Triggered_ordertypeEncoder::default().wrap(self, offset)
         }
 
     }
@@ -65,19 +63,19 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct Simple_order_detailDecoder<P> {
+    pub struct SimpleOrderDetailDecoder<P> {
         parent: Option<P>,
         offset: usize,
     }
 
-    impl<'a, P> Reader<'a> for Simple_order_detailDecoder<P> where P: Reader<'a> + Default {
+    impl<'a, P> Reader<'a> for SimpleOrderDetailDecoder<P> where P: Reader<'a> + Default {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             self.parent.as_ref().expect("parent missing").get_buf()
         }
     }
 
-    impl<'a, P> Simple_order_detailDecoder<P> where P: Reader<'a> + Default {
+    impl<'a, P> SimpleOrderDetailDecoder<P> where P: Reader<'a> + Default {
         pub fn wrap(mut self, parent: P, offset: usize) -> Self {
             self.parent = Some(parent);
             self.offset = offset;
@@ -89,24 +87,18 @@ pub mod decoder {
             self.parent.take().ok_or(SbeErr::ParentNotSet)
         }
 
-        /// REQUIRED enum
+        /// COMPOSITE DECODER
         #[inline]
-        pub fn order_type(&self) -> OrderType {
-            self.get_buf().get_u8_at(self.offset).into()
+        pub fn execute_decoder(self) -> ExecuteDecoder<Self> {
+            let offset = self.offset;
+            ExecuteDecoder::default().wrap(self, offset)
         }
 
         /// COMPOSITE DECODER
         #[inline]
         pub fn trigger_decoder(self) -> TriggerDecoder<Self> {
-            let offset = self.offset + 1;
+            let offset = self.offset + 43;
             TriggerDecoder::default().wrap(self, offset)
-        }
-
-        /// COMPOSITE DECODER
-        #[inline]
-        pub fn triggered_ordertype_decoder(self) -> Triggered_ordertypeDecoder<Self> {
-            let offset = self.offset + 10;
-            Triggered_ordertypeDecoder::default().wrap(self, offset)
         }
 
     }

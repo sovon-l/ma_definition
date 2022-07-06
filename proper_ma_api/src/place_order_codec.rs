@@ -3,7 +3,7 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
-pub const SBE_BLOCK_LENGTH: u16 = 74;
+pub const SBE_BLOCK_LENGTH: u16 = 73;
 pub const SBE_TEMPLATE_ID: u16 = 4;
 pub const SBE_SCHEMA_ID: u16 = 1;
 pub const SBE_SCHEMA_VERSION: u16 = 1;
@@ -62,7 +62,7 @@ pub mod encoder {
             header
         }
 
-        /// primitive array field 'upstream_order_id'
+        /// primitive array field 'upstreamOrderId'
         /// - min value: 32
         /// - max value: 126
         /// - null value: 0
@@ -101,16 +101,16 @@ pub mod encoder {
 
         /// COMPOSITE ENCODER
         #[inline]
-        pub fn acc_id_encoder(self) -> Acc_idEncoder<Self> {
+        pub fn acc_id_encoder(self) -> AccIdEncoder<Self> {
             let offset = self.offset + 12;
-            Acc_idEncoder::default().wrap(self, offset)
+            AccIdEncoder::default().wrap(self, offset)
         }
 
         /// COMPOSITE ENCODER
         #[inline]
-        pub fn simple_order_detail_encoder(self) -> Simple_order_detailEncoder<Self> {
+        pub fn simple_order_detail_encoder(self) -> SimpleOrderDetailEncoder<Self> {
             let offset = self.offset + 21;
-            Simple_order_detailEncoder::default().wrap(self, offset)
+            SimpleOrderDetailEncoder::default().wrap(self, offset)
         }
 
     }
@@ -208,16 +208,16 @@ pub mod decoder {
 
         /// COMPOSITE DECODER
         #[inline]
-        pub fn acc_id_decoder(self) -> Acc_idDecoder<Self> {
+        pub fn acc_id_decoder(self) -> AccIdDecoder<Self> {
             let offset = self.offset + 12;
-            Acc_idDecoder::default().wrap(self, offset)
+            AccIdDecoder::default().wrap(self, offset)
         }
 
         /// COMPOSITE DECODER
         #[inline]
-        pub fn simple_order_detail_decoder(self) -> Simple_order_detailDecoder<Self> {
+        pub fn simple_order_detail_decoder(self) -> SimpleOrderDetailDecoder<Self> {
             let offset = self.offset + 21;
-            Simple_order_detailDecoder::default().wrap(self, offset)
+            SimpleOrderDetailDecoder::default().wrap(self, offset)
         }
 
     }

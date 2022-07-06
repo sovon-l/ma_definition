@@ -1,9 +1,9 @@
 #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Order_options(pub u8);
-impl Order_options {
+pub struct OrderOptions(pub u8);
+impl OrderOptions {
     #[inline]
     pub fn new(value: u8) -> Self {
-        Order_options(value)
+        OrderOptions(value)
     }
 
     #[inline]
@@ -27,10 +27,10 @@ impl Order_options {
         self
     }
 }
-impl core::fmt::Debug for Order_options {
+impl core::fmt::Debug for OrderOptions {
     #[inline]
     fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(fmt, "Order_options[reduce_only(0)={}]",
+        write!(fmt, "OrderOptions[reduce_only(0)={}]",
             self.get_reduce_only(),)
     }
 }
