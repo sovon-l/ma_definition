@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
-                   package="proper.gateway.api"
+                   package="proper.ma.api"
                    id="1"
                    version="1"
                    semanticVersion="1.0"
-                   description="for gateway data transfer"
+                   description="for ma data transfer"
                    byteOrder="littleEndian">
     <types>
         <composite name="messageHeader" description="Message identifiers and length of message root">
@@ -17,8 +17,8 @@
             <type name="blockLength" primitiveType="uint16"/>
             <type name="numInGroup" primitiveType="uint8" semanticType="NumInGroup"/>
         </composite>
-        <type name="idString" length="8" primitiveType="char" characterEncoding="ISO_8859_1"/>
 
+        <!-- common -->
         <type name="asset" length="6" primitiveType="char" characterEncoding="US-ASCII"/>
         <enum name="exchange" encodingType="uint8" description="trading exchange">
             <validValue name="binance">0</validValue>
@@ -40,6 +40,14 @@
             <type name="exponent" primitiveType="int8"/>
         </composite>
 
+        <!-- market -->
+        <set name="orderbook_flags" encodingType="uint8">
+            <choice name="isSnapshot">0</choice>
+            <choice name="L1">1</choice>
+        </set>
+
+        <!-- gateway -->
+        <type name="idString" length="8" primitiveType="char" characterEncoding="ISO_8859_1"/>
         <composite name="acc_id">
             <ref name="exchange" type="exchange"/>
             <ref name="context" type="idString"/>
@@ -70,13 +78,36 @@
             <ref name="triggered_ordertype" type="basic_order_detail" presence="optional"/>         
         </composite>
     </types>
-    <sbe:message name="placeOrder" id="1">
+    <!-- market -->
+    <sbe:message name="orderbookMsg" id="1">
+        <field name="instrument" id="1" type="instrument"/>
+        <field name="market_timestamp" id="2" type="uint64"/>
+        <field name="timestamp" id="3" type="uint64" presence="optional"/>
+        <field name="orderbook_flags" id="4" type="orderbook_flags"/> <!-- golang need human fix after gen -->
+        <group name="depths" id="5" dimensionType="groupSizeEncoding">
+            <field name="price" id="1" type="dec"/>
+            <field name="size" id="2" type="dec"/>
+        </group>
+    </sbe:message>
+    <sbe:message name="tradeMsg" id="2">
+        <field name="instrument" id="1" type="instrument"/>
+        <field name="market_timestamp" id="2" type="uint64"/>
+        <group name="trades" id="3" dimensionType="groupSizeEncoding">
+            <field name="price" id="1" type="dec"/>
+            <field name="size" id="2" type="dec"/>
+            <field name="timestamp" id="3" type="uint64"/>
+            <!-- <field name="tradeId" id="4" type="uint32"/> -->
+        </group>
+    </sbe:message>
+
+    <!-- gateway -->
+    <sbe:message name="placeOrder" id="4">
         <field name="upstream_order_id" id="1" type="idString"/>
         <field name="timestamp" id="2" type="uint32"/>
         <field name="acc_id" id="3" type="acc_id"/>
         <field name="simple_order_detail" id="4" type="simple_order_detail"/>
     </sbe:message>
-    <sbe:message name="cancelOrder" id="2">
+    <sbe:message name="cancelOrder" id="5">
         <field name="upstream_order_id" id="1" type="idString"/>
     </sbe:message>
 </sbe:messageSchema>
