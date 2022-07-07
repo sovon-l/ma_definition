@@ -8,7 +8,7 @@ use DecDecoder as TriggerDecoder;
 use BasicOrderDetailEncoder as ExecuteEncoder;
 use BasicOrderDetailDecoder as ExecuteDecoder;
 
-pub const ENCODED_LENGTH: usize = 52;
+pub const ENCODED_LENGTH: usize = 53;
 
 pub mod encoder {
     use super::*;
@@ -49,10 +49,16 @@ pub mod encoder {
             ExecuteEncoder::default().wrap(self, offset)
         }
 
+        #[inline]
+        pub fn simple_order_flag(&mut self, value: SimpleOrderFlag) {
+            let offset = self.offset + 43;
+            self.get_buf_mut().put_u8_at(offset, value.0)
+        }
+
         /// COMPOSITE ENCODER
         #[inline]
         pub fn trigger_encoder(self) -> TriggerEncoder<Self> {
-            let offset = self.offset + 43;
+            let offset = self.offset + 44;
             TriggerEncoder::default().wrap(self, offset)
         }
 
@@ -94,10 +100,15 @@ pub mod decoder {
             ExecuteDecoder::default().wrap(self, offset)
         }
 
+        #[inline]
+        pub fn simple_order_flag(&self) -> SimpleOrderFlag {
+            SimpleOrderFlag::new(self.get_buf().get_u8_at(self.offset + 43))
+        }
+
         /// COMPOSITE DECODER
         #[inline]
         pub fn trigger_decoder(self) -> TriggerDecoder<Self> {
-            let offset = self.offset + 43;
+            let offset = self.offset + 44;
             TriggerDecoder::default().wrap(self, offset)
         }
 

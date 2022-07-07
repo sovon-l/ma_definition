@@ -3,8 +3,8 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
-pub const SBE_BLOCK_LENGTH: u16 = 74;
-pub const SBE_TEMPLATE_ID: u16 = 8;
+pub const SBE_BLOCK_LENGTH: u16 = 45;
+pub const SBE_TEMPLATE_ID: u16 = 13;
 pub const SBE_SCHEMA_ID: u16 = 1;
 pub const SBE_SCHEMA_VERSION: u16 = 1;
 
@@ -12,21 +12,21 @@ pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct PlaceOrderEncoder<'a> {
+    pub struct OrderStatusMsgEncoder<'a> {
         buf: WriteBuf<'a>,
         initial_offset: usize,
         offset: usize,
         limit: usize,
     }
 
-    impl<'a> Writer<'a> for PlaceOrderEncoder<'a> {
+    impl<'a> Writer<'a> for OrderStatusMsgEncoder<'a> {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             &mut self.buf
         }
     }
 
-    impl<'a> Encoder<'a> for PlaceOrderEncoder<'a> {
+    impl<'a> Encoder<'a> for OrderStatusMsgEncoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -38,7 +38,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a> PlaceOrderEncoder<'a> {
+    impl<'a> OrderStatusMsgEncoder<'a> {
         pub fn wrap(mut self, buf: WriteBuf<'a>, offset: usize) -> Self {
             let limit = offset + SBE_BLOCK_LENGTH as usize;
             self.buf = buf;
@@ -62,55 +62,60 @@ pub mod encoder {
             header
         }
 
-        /// primitive array field 'upstreamOrderId'
-        /// - min value: 32
-        /// - max value: 126
-        /// - null value: 0
-        /// - characterEncoding: US-ASCII
-        /// - semanticType: null
-        /// - encodedOffset: 0
-        /// - encodedLength: 8
-        /// - version: 0
+        /// COMPOSITE ENCODER
         #[inline]
-        pub fn upstream_order_id(&mut self, value: [u8; 8]) {
+        pub fn filled_amount_encoder(self) -> DecEncoder<Self> {
             let offset = self.offset;
-            let buf = self.get_buf_mut();
-            buf.put_u8_at(offset, value[0]);
-            buf.put_u8_at(offset + 1, value[1]);
-            buf.put_u8_at(offset + 2, value[2]);
-            buf.put_u8_at(offset + 3, value[3]);
-            buf.put_u8_at(offset + 4, value[4]);
-            buf.put_u8_at(offset + 5, value[5]);
-            buf.put_u8_at(offset + 6, value[6]);
-            buf.put_u8_at(offset + 7, value[7]);
+            DecEncoder::default().wrap(self, offset)
         }
 
-        /// primitive field 'timestamp'
+        /// COMPOSITE ENCODER
+        #[inline]
+        pub fn paid_amount_encoder(self) -> DecEncoder<Self> {
+            let offset = self.offset + 9;
+            DecEncoder::default().wrap(self, offset)
+        }
+
+        /// COMPOSITE ENCODER
+        #[inline]
+        pub fn commission_encoder(self) -> DecEncoder<Self> {
+            let offset = self.offset + 18;
+            DecEncoder::default().wrap(self, offset)
+        }
+
+        /// COMPOSITE ENCODER
+        #[inline]
+        pub fn order_status_encoder(self) -> OrderStatusEncoder<Self> {
+            let offset = self.offset + 27;
+            OrderStatusEncoder::default().wrap(self, offset)
+        }
+
+        /// primitive field 'lastUpdate'
         /// - min value: 0
-        /// - max value: 4294967294
-        /// - null value: 4294967295
+        /// - max value: -2
+        /// - null value: -1
         /// - characterEncoding: null
         /// - semanticType: null
-        /// - encodedOffset: 8
-        /// - encodedLength: 4
+        /// - encodedOffset: 29
+        /// - encodedLength: 8
         #[inline]
-        pub fn timestamp(&mut self, value: u32) {
-            let offset = self.offset + 8;
-            self.get_buf_mut().put_u32_at(offset, value);
+        pub fn last_update(&mut self, value: u64) {
+            let offset = self.offset + 29;
+            self.get_buf_mut().put_u64_at(offset, value);
         }
 
-        /// COMPOSITE ENCODER
+        /// primitive field 'lastExchangeUpdate'
+        /// - min value: 0
+        /// - max value: -2
+        /// - null value: -1
+        /// - characterEncoding: null
+        /// - semanticType: null
+        /// - encodedOffset: 37
+        /// - encodedLength: 8
         #[inline]
-        pub fn acc_id_encoder(self) -> AccIdEncoder<Self> {
-            let offset = self.offset + 12;
-            AccIdEncoder::default().wrap(self, offset)
-        }
-
-        /// COMPOSITE ENCODER
-        #[inline]
-        pub fn order_detail_encoder(self) -> OrderDetailEncoder<Self> {
-            let offset = self.offset + 21;
-            OrderDetailEncoder::default().wrap(self, offset)
+        pub fn last_exchange_update(&mut self, value: u64) {
+            let offset = self.offset + 37;
+            self.get_buf_mut().put_u64_at(offset, value);
         }
 
     }
@@ -121,7 +126,7 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct PlaceOrderDecoder<'a> {
+    pub struct OrderStatusMsgDecoder<'a> {
         buf: ReadBuf<'a>,
         initial_offset: usize,
         offset: usize,
@@ -130,14 +135,14 @@ pub mod decoder {
         pub acting_version: u16,
     }
 
-    impl<'a> Reader<'a> for PlaceOrderDecoder<'a> {
+    impl<'a> Reader<'a> for OrderStatusMsgDecoder<'a> {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             &self.buf
         }
     }
 
-    impl<'a> Decoder<'a> for PlaceOrderDecoder<'a> {
+    impl<'a> Decoder<'a> for OrderStatusMsgDecoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -149,7 +154,7 @@ pub mod decoder {
         }
     }
 
-    impl<'a> PlaceOrderDecoder<'a> {
+    impl<'a> OrderStatusMsgDecoder<'a> {
         pub fn wrap(
             mut self,
             buf: ReadBuf<'a>,
@@ -185,39 +190,44 @@ pub mod decoder {
             )
         }
 
+        /// COMPOSITE DECODER
         #[inline]
-        pub fn upstream_order_id(&self) -> [u8; 8] {
-            let buf = self.get_buf();
-            [
-                buf.get_u8_at(self.offset),
-                buf.get_u8_at(self.offset + 1),
-                buf.get_u8_at(self.offset + 2),
-                buf.get_u8_at(self.offset + 3),
-                buf.get_u8_at(self.offset + 4),
-                buf.get_u8_at(self.offset + 5),
-                buf.get_u8_at(self.offset + 6),
-                buf.get_u8_at(self.offset + 7),
-            ]
+        pub fn filled_amount_decoder(self) -> DecDecoder<Self> {
+            let offset = self.offset;
+            DecDecoder::default().wrap(self, offset)
+        }
+
+        /// COMPOSITE DECODER
+        #[inline]
+        pub fn paid_amount_decoder(self) -> DecDecoder<Self> {
+            let offset = self.offset + 9;
+            DecDecoder::default().wrap(self, offset)
+        }
+
+        /// COMPOSITE DECODER
+        #[inline]
+        pub fn commission_decoder(self) -> DecDecoder<Self> {
+            let offset = self.offset + 18;
+            DecDecoder::default().wrap(self, offset)
+        }
+
+        /// COMPOSITE DECODER
+        #[inline]
+        pub fn order_status_decoder(self) -> OrderStatusDecoder<Self> {
+            let offset = self.offset + 27;
+            OrderStatusDecoder::default().wrap(self, offset)
         }
 
         /// primitive field - 'REQUIRED'
         #[inline]
-        pub fn timestamp(&self) -> u32 {
-            self.get_buf().get_u32_at(self.offset + 8)
+        pub fn last_update(&self) -> u64 {
+            self.get_buf().get_u64_at(self.offset + 29)
         }
 
-        /// COMPOSITE DECODER
+        /// primitive field - 'REQUIRED'
         #[inline]
-        pub fn acc_id_decoder(self) -> AccIdDecoder<Self> {
-            let offset = self.offset + 12;
-            AccIdDecoder::default().wrap(self, offset)
-        }
-
-        /// COMPOSITE DECODER
-        #[inline]
-        pub fn order_detail_decoder(self) -> OrderDetailDecoder<Self> {
-            let offset = self.offset + 21;
-            OrderDetailDecoder::default().wrap(self, offset)
+        pub fn last_exchange_update(&self) -> u64 {
+            self.get_buf().get_u64_at(self.offset + 37)
         }
 
     }

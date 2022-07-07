@@ -48,7 +48,7 @@ pub mod encoder {
         /// - min value: 32
         /// - max value: 126
         /// - null value: 0
-        /// - characterEncoding: ISO_8859_1
+        /// - characterEncoding: US-ASCII
         /// - semanticType: null
         /// - encodedOffset: 1
         /// - encodedLength: 8

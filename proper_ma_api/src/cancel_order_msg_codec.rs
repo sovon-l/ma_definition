@@ -3,8 +3,8 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
-pub const SBE_BLOCK_LENGTH: u16 = 74;
-pub const SBE_TEMPLATE_ID: u16 = 8;
+pub const SBE_BLOCK_LENGTH: u16 = 8;
+pub const SBE_TEMPLATE_ID: u16 = 9;
 pub const SBE_SCHEMA_ID: u16 = 1;
 pub const SBE_SCHEMA_VERSION: u16 = 1;
 
@@ -12,21 +12,21 @@ pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct PlaceOrderEncoder<'a> {
+    pub struct CancelOrderMsgEncoder<'a> {
         buf: WriteBuf<'a>,
         initial_offset: usize,
         offset: usize,
         limit: usize,
     }
 
-    impl<'a> Writer<'a> for PlaceOrderEncoder<'a> {
+    impl<'a> Writer<'a> for CancelOrderMsgEncoder<'a> {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             &mut self.buf
         }
     }
 
-    impl<'a> Encoder<'a> for PlaceOrderEncoder<'a> {
+    impl<'a> Encoder<'a> for CancelOrderMsgEncoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -38,7 +38,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a> PlaceOrderEncoder<'a> {
+    impl<'a> CancelOrderMsgEncoder<'a> {
         pub fn wrap(mut self, buf: WriteBuf<'a>, offset: usize) -> Self {
             let limit = offset + SBE_BLOCK_LENGTH as usize;
             self.buf = buf;
@@ -85,34 +85,6 @@ pub mod encoder {
             buf.put_u8_at(offset + 7, value[7]);
         }
 
-        /// primitive field 'timestamp'
-        /// - min value: 0
-        /// - max value: 4294967294
-        /// - null value: 4294967295
-        /// - characterEncoding: null
-        /// - semanticType: null
-        /// - encodedOffset: 8
-        /// - encodedLength: 4
-        #[inline]
-        pub fn timestamp(&mut self, value: u32) {
-            let offset = self.offset + 8;
-            self.get_buf_mut().put_u32_at(offset, value);
-        }
-
-        /// COMPOSITE ENCODER
-        #[inline]
-        pub fn acc_id_encoder(self) -> AccIdEncoder<Self> {
-            let offset = self.offset + 12;
-            AccIdEncoder::default().wrap(self, offset)
-        }
-
-        /// COMPOSITE ENCODER
-        #[inline]
-        pub fn order_detail_encoder(self) -> OrderDetailEncoder<Self> {
-            let offset = self.offset + 21;
-            OrderDetailEncoder::default().wrap(self, offset)
-        }
-
     }
 
 } // end encoder
@@ -121,7 +93,7 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct PlaceOrderDecoder<'a> {
+    pub struct CancelOrderMsgDecoder<'a> {
         buf: ReadBuf<'a>,
         initial_offset: usize,
         offset: usize,
@@ -130,14 +102,14 @@ pub mod decoder {
         pub acting_version: u16,
     }
 
-    impl<'a> Reader<'a> for PlaceOrderDecoder<'a> {
+    impl<'a> Reader<'a> for CancelOrderMsgDecoder<'a> {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             &self.buf
         }
     }
 
-    impl<'a> Decoder<'a> for PlaceOrderDecoder<'a> {
+    impl<'a> Decoder<'a> for CancelOrderMsgDecoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -149,7 +121,7 @@ pub mod decoder {
         }
     }
 
-    impl<'a> PlaceOrderDecoder<'a> {
+    impl<'a> CancelOrderMsgDecoder<'a> {
         pub fn wrap(
             mut self,
             buf: ReadBuf<'a>,
@@ -198,26 +170,6 @@ pub mod decoder {
                 buf.get_u8_at(self.offset + 6),
                 buf.get_u8_at(self.offset + 7),
             ]
-        }
-
-        /// primitive field - 'REQUIRED'
-        #[inline]
-        pub fn timestamp(&self) -> u32 {
-            self.get_buf().get_u32_at(self.offset + 8)
-        }
-
-        /// COMPOSITE DECODER
-        #[inline]
-        pub fn acc_id_decoder(self) -> AccIdDecoder<Self> {
-            let offset = self.offset + 12;
-            AccIdDecoder::default().wrap(self, offset)
-        }
-
-        /// COMPOSITE DECODER
-        #[inline]
-        pub fn order_detail_decoder(self) -> OrderDetailDecoder<Self> {
-            let offset = self.offset + 21;
-            OrderDetailDecoder::default().wrap(self, offset)
         }
 
     }

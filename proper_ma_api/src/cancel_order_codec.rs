@@ -4,7 +4,7 @@ pub use encoder::*;
 pub use decoder::*;
 
 pub const SBE_BLOCK_LENGTH: u16 = 8;
-pub const SBE_TEMPLATE_ID: u16 = 5;
+pub const SBE_TEMPLATE_ID: u16 = 9;
 pub const SBE_SCHEMA_ID: u16 = 1;
 pub const SBE_SCHEMA_VERSION: u16 = 1;
 
@@ -66,7 +66,7 @@ pub mod encoder {
         /// - min value: 32
         /// - max value: 126
         /// - null value: 0
-        /// - characterEncoding: ISO_8859_1
+        /// - characterEncoding: US-ASCII
         /// - semanticType: null
         /// - encodedOffset: 0
         /// - encodedLength: 8

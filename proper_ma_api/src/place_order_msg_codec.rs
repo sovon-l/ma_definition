@@ -12,21 +12,21 @@ pub mod encoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct PlaceOrderEncoder<'a> {
+    pub struct PlaceOrderMsgEncoder<'a> {
         buf: WriteBuf<'a>,
         initial_offset: usize,
         offset: usize,
         limit: usize,
     }
 
-    impl<'a> Writer<'a> for PlaceOrderEncoder<'a> {
+    impl<'a> Writer<'a> for PlaceOrderMsgEncoder<'a> {
         #[inline]
         fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
             &mut self.buf
         }
     }
 
-    impl<'a> Encoder<'a> for PlaceOrderEncoder<'a> {
+    impl<'a> Encoder<'a> for PlaceOrderMsgEncoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -38,7 +38,7 @@ pub mod encoder {
         }
     }
 
-    impl<'a> PlaceOrderEncoder<'a> {
+    impl<'a> PlaceOrderMsgEncoder<'a> {
         pub fn wrap(mut self, buf: WriteBuf<'a>, offset: usize) -> Self {
             let limit = offset + SBE_BLOCK_LENGTH as usize;
             self.buf = buf;
@@ -121,7 +121,7 @@ pub mod decoder {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct PlaceOrderDecoder<'a> {
+    pub struct PlaceOrderMsgDecoder<'a> {
         buf: ReadBuf<'a>,
         initial_offset: usize,
         offset: usize,
@@ -130,14 +130,14 @@ pub mod decoder {
         pub acting_version: u16,
     }
 
-    impl<'a> Reader<'a> for PlaceOrderDecoder<'a> {
+    impl<'a> Reader<'a> for PlaceOrderMsgDecoder<'a> {
         #[inline]
         fn get_buf(&self) -> &ReadBuf<'a> {
             &self.buf
         }
     }
 
-    impl<'a> Decoder<'a> for PlaceOrderDecoder<'a> {
+    impl<'a> Decoder<'a> for PlaceOrderMsgDecoder<'a> {
         #[inline]
         fn get_limit(&self) -> usize {
             self.limit
@@ -149,7 +149,7 @@ pub mod decoder {
         }
     }
 
-    impl<'a> PlaceOrderDecoder<'a> {
+    impl<'a> PlaceOrderMsgDecoder<'a> {
         pub fn wrap(
             mut self,
             buf: ReadBuf<'a>,

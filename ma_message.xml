@@ -47,7 +47,7 @@
         </set>
 
         <!-- gateway -->
-        <type name="idString" length="8" primitiveType="char" characterEncoding="ISO_8859_1"/>
+        <type name="idString" length="8" primitiveType="char"/>
         <composite name="accId">
             <ref name="exchange" type="exchange"/>
             <ref name="context" type="idString"/>
@@ -72,8 +72,32 @@
             </set>
         </composite>
         <composite name="simpleOrderDetail">
-            <ref name="execute" type="basicOrderDetail"/>         
+            <ref name="execute" type="basicOrderDetail"/>
+            <set name="simpleOrderFlag" encodingType="uint8" presence="optional">
+                <choice name="isStopLoss">0</choice>
+            </set>
             <ref name="trigger" type="dec" presence="optional"/>
+        </composite>
+        <composite name="orderDetail">
+            <ref name="simpleOrderDetail" type="simpleOrderDetail" presence="optional"/>
+        </composite>
+        <composite name="orderStatus">
+            <enum name="orderStatusConcrete" encodingType="uint8">
+                <validValue name="Submitting">0</validValue>
+                <validValue name="Submitted">1</validValue>
+                <validValue name="Cancelling">2</validValue>
+                <validValue name="Finished">3</validValue>
+            </enum>
+            <enum name="errorCode" encodingType="uint8" presence="optional">
+                <validValue name="InsufficientFund">0</validValue>
+                <validValue name="FailPostOnly">1</validValue>
+                <validValue name="Timeout">2</validValue>
+                <validValue name="GatewayTooManyRequests">3</validValue>
+                <validValue name="ExchangeTooManyRequests">4</validValue>
+                <validValue name="ExchangeConnectionError">5</validValue>
+                <validValue name="UnexpectedExchangeError">6</validValue>
+                <validValue name="UnexpectedGatewayError">7</validValue>
+            </enum>
         </composite>
     </types>
     <!-- market -->
@@ -99,13 +123,25 @@
     </sbe:message>
 
     <!-- gateway -->
-    <sbe:message name="placeOrder" id="4">
+    <sbe:message name="placeOrderMsg" id="8">
         <field name="upstreamOrderId" id="1" type="idString"/>
         <field name="timestamp" id="2" type="uint32"/>
         <field name="accId" id="3" type="accId"/>
-        <field name="simpleOrderDetail" id="4" type="simpleOrderDetail"/>
+        <field name="orderDetail" id="4" type="orderDetail"/>
     </sbe:message>
-    <sbe:message name="cancelOrder" id="5">
+    <sbe:message name="cancelOrderMsg" id="9">
         <field name="upstreamOrderId" id="1" type="idString"/>
+    </sbe:message>
+    <!-- gateway internal -->
+    <sbe:message name="orderDetailMsg" id="12">
+        <field name="orderDetail" id="1" type="orderDetail"/>
+    </sbe:message>
+    <sbe:message name="orderStatusMsg" id="13">
+        <field name="filledAmount" id="1" type="dec"/>
+        <field name="paidAmount" id="2" type="dec"/>
+        <field name="commission" id="3" type="dec"/>
+        <field name="orderStatus" id="4" type="orderStatus"/>
+        <field name="lastUpdate" id="5" type="uint64"/>
+        <field name="lastExchangeUpdate" id="6" type="uint64"/>
     </sbe:message>
 </sbe:messageSchema>
