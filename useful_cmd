@@ -1,6 +1,6 @@
-java -Dsbe.target.language=Rust -Dsbe.output.dir=. -jar ~/simple-binary-encoding/sbe-all/build/libs/sbe-all-1.25.2-SNAPSHOT.jar ma_message.xml
+java -Dsbe.xinclude.aware=true -Dsbe.target.language=Rust -Dsbe.output.dir=. -jar ~/simple-binary-encoding/sbe-all/build/libs/sbe-all-1.25.2-SNAPSHOT.jar ma_definition.xml
 
-java -Dsbe.target.language=Golang -Dsbe.output.dir=.. -jar ~/simple-binary-encoding/sbe-all/build/libs/sbe-all-1.25.2-SNAPSHOT.jar ma_message.xml
+java -Dsbe.xinclude.aware=true -Dsbe.target.language=Golang -Dsbe.output.dir=.. -jar ~/simple-binary-encoding/sbe-all/build/libs/sbe-all-1.25.2-SNAPSHOT.jar ma_definition.xml
 
 wget http://fixprotocol.io/2016/sbe/sbe.xsd
 

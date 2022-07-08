@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema 
+    xmlns:sbe="http://fixprotocol.io/2016/sbe"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    package="proper.ma.api"
+    id="1"
+    version="1"
+    semanticVersion="1.0"
+    description="for ma data transfer"
+    byteOrder="littleEndian"
+>
+    <!-- types -->
+    <xi:include href="common_types.xml"/>
+    <xi:include href="market_types.xml"/>
+    <xi:include href="gateway_types.xml"/>
+    
+    <!-- note: import doesnt work in fix1.0 -->
+
+    <!-- market -->
+    <sbe:message name="quoteMsg" id="1">
+        <field name="instrument" id="1" type="instrument"/>
+        <field name="marketTimestamp" id="2" type="uint64"/>
+        <field name="timestamp" id="3" type="uint64" presence="optional"/>
+        <field name="orderbookFlags" id="4" type="orderbookFlags"/> <!-- golang need human fix after gen -->
+        <group name="depths" id="5" dimensionType="groupSizeEncoding">
+            <field name="price" id="1" type="dec"/>
+            <field name="size" id="2" type="dec"/>
+        </group>
+    </sbe:message>
+    <sbe:message name="tradeMsg" id="2">
+        <field name="instrument" id="1" type="instrument"/>
+        <field name="marketTimestamp" id="2" type="uint64"/>
+        <group name="trades" id="3" dimensionType="groupSizeEncoding">
+            <field name="price" id="1" type="dec"/>
+            <field name="size" id="2" type="dec"/>
+            <field name="timestamp" id="3" type="uint64"/>
+            <!-- <field name="tradeId" id="4" type="uint32"/> -->
+        </group>
+    </sbe:message>
+
+    <!-- gateway -->
+    <sbe:message name="placeOrderMsg" id="8">
+        <field name="upstreamOrderId" id="1" type="idString"/>
+        <field name="timestamp" id="2" type="uint32"/>
+        <field name="accId" id="3" type="accId"/>
+        <field name="orderDetail" id="4" type="orderDetail"/>
+    </sbe:message>
+    <sbe:message name="cancelOrderMsg" id="9">
+        <field name="upstreamOrderId" id="1" type="idString"/>
+    </sbe:message>
+    <!-- gateway internal -->
+    <sbe:message name="orderDetailMsg" id="12">
+        <field name="orderDetail" id="1" type="orderDetail"/>
+    </sbe:message>
+    <sbe:message name="orderStatusMsg" id="13">
+        <field name="filledAmount" id="1" type="dec"/>
+        <field name="paidAmount" id="2" type="dec"/>
+        <field name="commission" id="3" type="dec"/>
+        <field name="orderStatus" id="4" type="orderStatus"/>
+        <field name="lastUpdate" id="5" type="uint64"/>
+        <field name="lastExchangeUpdate" id="6" type="uint64"/>
+    </sbe:message>
+</sbe:messageSchema>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<types  
+    xmlns:sbe="http://fixprotocol.io/2017/sbe" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://fixprotocol.io/2017/sbe ../xsd/sbe-2.0rc3.xsd"
+    description="common types"
+>
+    <type name="asset" length="6" primitiveType="char" characterEncoding="US-ASCII"/>
+    <enum name="exchange" encodingType="uint8" description="trading exchange">
+        <validValue name="binance">0</validValue>
+        <validValue name="ftx">1</validValue>
+    </enum>
+    <composite name="instrument">
+        <ref name="exchange" type="exchange"/>
+        <ref name="quote" type="asset"/>
+        <ref name="base" type="asset"/>
+        <enum name="instrumentType" encodingType="uint8" description="instrument type">
+            <validValue name="spot">0</validValue>
+            <validValue name="future">1</validValue>
+            <validValue name="inverseFuture">2</validValue>
+        </enum>
+        <type name="expiry" primitiveType="uint32" presence="optional"/> <!-- intended UNIX ts at s -->
+    </composite>
+    <set name="orderbookFlags" encodingType="uint8">
+        <choice name="isSnapshot">0</choice>
+        <choice name="L1">1</choice>
+    </set>
+</types>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<types  
+    xmlns:sbe="http://fixprotocol.io/2017/sbe" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://fixprotocol.io/2017/sbe ../xsd/sbe-2.0rc3.xsd"
+    description="common types"
+>
+    <composite name="messageHeader" description="Message identifiers and length of message root">
+        <type name="blockLength" primitiveType="uint16"/>
+        <type name="templateId" primitiveType="uint16"/>
+        <type name="schemaId" primitiveType="uint16"/>
+        <type name="version" primitiveType="uint16"/>
+    </composite>
+    <composite name="groupSizeEncoding" description="Repeating group dimensions" >
+        <type name="blockLength" primitiveType="uint16"/>
+        <type name="numInGroup" primitiveType="uint8" semanticType="NumInGroup"/>
+    </composite>
+
+    <composite name="dec">
+        <type name="mantissa" primitiveType="int64"/>
+        <type name="exponent" primitiveType="int8"/>
+    </composite>
+</types>

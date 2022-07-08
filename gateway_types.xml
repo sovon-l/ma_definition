@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<types  
+    xmlns:sbe="http://fixprotocol.io/2017/sbe" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://fixprotocol.io/2017/sbe ../xsd/sbe-2.0rc3.xsd"
+    description="common types"
+>
+    <type name="idString" length="8" primitiveType="char"/>
+    <composite name="accId">
+        <ref name="exchange" type="exchange"/>
+        <ref name="context" type="idString"/>
+    </composite>
+    <enum name="orderType" encodingType="uint8">
+        <validValue name="limit">0</validValue>
+        <validValue name="market">1</validValue>
+    </enum>
+    <composite name="basicOrderDetail">
+        <ref name="orderType" type="orderType"/>
+        <ref name="instrument" type="instrument"/>
+        <ref name="price" type="dec" presence="optional"/>
+        <ref name="amount" type="dec"/>
+        <enum name="timeInForce" encodingType="uint8" presence="optional">
+            <validValue name="GoodTill">0</validValue>
+            <validValue name="IOC">1</validValue>
+            <validValue name="FOK">2</validValue>
+        </enum>
+        <type name="expiryTime" primitiveType="uint32" presence="optional"/>
+        <set name="orderOptions" encodingType="uint8">
+            <choice name="reduceOnly">0</choice>
+        </set>
+    </composite>
+    <composite name="simpleOrderDetail">
+        <ref name="execute" type="basicOrderDetail"/>
+        <set name="simpleOrderFlag" encodingType="uint8" presence="optional">
+            <choice name="isStopLoss">0</choice>
+        </set>
+        <ref name="trigger" type="dec" presence="optional"/>
+    </composite>
+    <composite name="orderDetail">
+        <ref name="simpleOrderDetail" type="simpleOrderDetail" presence="optional"/>
+    </composite>
+    <composite name="orderStatus">
+        <enum name="orderStatusConcrete" encodingType="uint8">
+            <validValue name="Submitting">0</validValue>
+            <validValue name="Submitted">1</validValue>
+            <validValue name="Cancelling">2</validValue>
+            <validValue name="Finished">3</validValue>
+        </enum>
+        <enum name="errorCode" encodingType="uint8" presence="optional">
+            <validValue name="InsufficientFund">0</validValue>
+            <validValue name="FailPostOnly">1</validValue>
+            <validValue name="Timeout">2</validValue>
+            <validValue name="GatewayTooManyRequests">3</validValue>
+            <validValue name="ExchangeTooManyRequests">4</validValue>
+            <validValue name="ExchangeConnectionError">5</validValue>
+            <validValue name="UnexpectedExchangeError">6</validValue>
+            <validValue name="UnexpectedGatewayError">7</validValue>
+        </enum>
+    </composite>
+</types>
