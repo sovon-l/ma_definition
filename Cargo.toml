@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 proper_ma_api = { path = "proper_ma_api" }
 rust_decimal = "1.22"
+chrono = "0.4"
+serde = "1.0"
