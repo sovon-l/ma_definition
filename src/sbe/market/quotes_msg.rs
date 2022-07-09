@@ -47,13 +47,17 @@ pub fn marshal_quotes_msg(q: Quotes) -> Vec<u8> {
     for Depth { price, size } in depths.into_iter() {
         depths_e.advance().unwrap();
 
-        let mut price_e = depths_e.price_encoder();
-        crate::sbe::decimal::encode_decimal(&mut price_e, price);
-        depths_e = price_e.parent().unwrap();
+        depths_e = crate::sbe::decimal::encode_decimal(
+            proper_ma_api::DepthsEncoder::price_encoder,
+            depths_e,
+            &price,
+        );
 
-        let mut size_e = depths_e.size_encoder();
-        crate::sbe::decimal::encode_decimal(&mut size_e, size);
-        depths_e = size_e.parent().unwrap();
+        depths_e = crate::sbe::decimal::encode_decimal(
+            proper_ma_api::DepthsEncoder::size_encoder,
+            depths_e,
+            &size,
+        );
     }
     buffer
 }

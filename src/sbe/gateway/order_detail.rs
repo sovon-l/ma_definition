@@ -56,7 +56,7 @@ pub fn encode_simple_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
             // let mut trigger_encoder = simple_order_detail_encoder.trigger_encoder();
             // crate::sbe::decimal::encode_decimal(&mut trigger_encoder, *trigger);
             // simple_order_detail_encoder = trigger_encoder.parent().unwrap();
-            simple_order_detail_encoder = crate::sbe::decimal::encode_decimal2(
+            simple_order_detail_encoder = crate::sbe::decimal::encode_decimal(
                 proper_ma_api::SimpleOrderDetailEncoder::trigger_encoder,
                 simple_order_detail_encoder,
                 trigger,

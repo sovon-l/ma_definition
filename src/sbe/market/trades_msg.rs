@@ -40,13 +40,17 @@ pub fn marshal_trades_msg(ts: Trades) -> Vec<u8> {
     {
         trades_e.advance().unwrap();
 
-        let mut price_e = trades_e.price_encoder();
-        crate::sbe::decimal::encode_decimal(&mut price_e, price);
-        trades_e = price_e.parent().unwrap();
+        trades_e = crate::sbe::decimal::encode_decimal(
+            proper_ma_api::TradesEncoder::price_encoder,
+            trades_e,
+            &price,
+        );
 
-        let mut size_e = trades_e.size_encoder();
-        crate::sbe::decimal::encode_decimal(&mut size_e, size);
-        trades_e = size_e.parent().unwrap();
+        trades_e = crate::sbe::decimal::encode_decimal(
+            proper_ma_api::TradesEncoder::size_encoder,
+            trades_e,
+            &size,
+        );
 
         trades_e.timestamp(timestamp);
     }
