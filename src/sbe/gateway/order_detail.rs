@@ -8,29 +8,35 @@ pub fn marshal_order_detail_msg(o: OrderDetail) -> Vec<u8> {
             + proper_ma_api::order_detail_msg_codec::SBE_BLOCK_LENGTH as usize
     ];
 
-    let mut order_detail_msg = proper_ma_api::OrderDetailMsgEncoder::default();
-    order_detail_msg = order_detail_msg.wrap(
+    let mut order_detail_msg_encoder = proper_ma_api::OrderDetailMsgEncoder::default();
+    order_detail_msg_encoder = order_detail_msg_encoder.wrap(
         proper_ma_api::WriteBuf::new(&mut buffer),
         proper_ma_api::message_header_codec::ENCODED_LENGTH,
     );
-    order_detail_msg = order_detail_msg.header(0).parent().unwrap();
+    order_detail_msg_encoder = order_detail_msg_encoder.header(0).parent().unwrap();
 
-    let order_detail_encoder = order_detail_msg.order_detail_encoder();
-    encode_order_detail(&o, order_detail_encoder);
-    // order_detail_msg = order_detail_encoder.parent().unwrap();
+    encode_order_detail(
+        proper_ma_api::OrderDetailMsgEncoder::order_detail_encoder,
+        order_detail_msg_encoder,
+        &o,
+    );
 
     buffer
 }
 
 pub fn encode_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
+    get_encoder: impl FnOnce(T) -> proper_ma_api::OrderDetailEncoder<T>,
+    parent_encoder: T,
     o: &OrderDetail,
-    order_detail_e: proper_ma_api::OrderDetailEncoder<T>,
-) -> proper_ma_api::OrderDetailEncoder<T> {
+) -> T {
+    let encoder = get_encoder(parent_encoder);
     match o {
-        OrderDetail::SimpleOrder(s) => {
-            let mut simple_order_detail_e = order_detail_e.simple_order_detail_encoder();
-            simple_order_detail_e = encode_simple_order_detail(s, simple_order_detail_e);
-            simple_order_detail_e.parent().unwrap()            
+        OrderDetail::SimpleOrder(s) => {     
+            encode_simple_order_detail(
+                proper_ma_api::OrderDetailEncoder::simple_order_detail_encoder,
+                encoder,
+                s,
+            )
         },
         // OrderDetail::OCO(o1, o2) => {
         //     let mut oco_order_detail_encoder = order_detail_encoder.oco_order_detail_encoder();
@@ -39,43 +45,47 @@ pub fn encode_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
         // OrderDetail::OTO(s1, s2) => encode_oto_order_detail(order_detail_encoder, s1, s2),
         // OrderDetail::Trailing(s) => encode_trailing_order_detail(order_detail_encoder, s),
         // OrderDetail::Adaptive(s) => encode_adaptive_order_detail(order_detail_encoder, s),
-    }
+    }.parent().unwrap()
 }
 
 pub fn encode_simple_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
+    get_encoder: impl FnOnce(T) -> proper_ma_api::SimpleOrderDetailEncoder<T>,
+    parent_encoder: T,
     o: &SimpleOrderDetail,
-    mut simple_order_detail_encoder: proper_ma_api::SimpleOrderDetailEncoder<T>,
-) -> proper_ma_api::SimpleOrderDetailEncoder<T> {
+) -> T {
+    let mut encoder = get_encoder(parent_encoder);
     match o {
         SimpleOrderDetail::BasicOrder(basic_order_detail) => {
-            let mut basic_order_detail_encoder = simple_order_detail_encoder.execute_encoder();
-            basic_order_detail_encoder = encode_basic_order_detail(basic_order_detail, basic_order_detail_encoder);
-            basic_order_detail_encoder.parent().unwrap()
+            encode_basic_order_detail(
+                proper_ma_api::SimpleOrderDetailEncoder::execute_encoder,
+                encoder,
+                basic_order_detail,
+            )
         }
         SimpleOrderDetail::TriggerOrder { is_stop_loss, trigger, execute } => {
-            // let mut trigger_encoder = simple_order_detail_encoder.trigger_encoder();
-            // crate::sbe::decimal::encode_decimal(&mut trigger_encoder, *trigger);
-            // simple_order_detail_encoder = trigger_encoder.parent().unwrap();
-            simple_order_detail_encoder = crate::sbe::decimal::encode_decimal(
+            encoder = crate::sbe::decimal::encode_decimal(
                 proper_ma_api::SimpleOrderDetailEncoder::trigger_encoder,
-                simple_order_detail_encoder,
+                encoder,
                 trigger,
             );
 
             let mut simple_order_flag_encoder = proper_ma_api::SimpleOrderFlag::default();
             simple_order_flag_encoder.set_is_stop_loss(*is_stop_loss);
-            simple_order_detail_encoder.simple_order_flag(simple_order_flag_encoder);
+            encoder.simple_order_flag(simple_order_flag_encoder);
             
-            let mut execute_encoder = simple_order_detail_encoder.execute_encoder();
-            execute_encoder = encode_basic_order_detail(execute, execute_encoder);
-            execute_encoder.parent().unwrap()
+            encode_basic_order_detail(
+                proper_ma_api::SimpleOrderDetailEncoder::execute_encoder,
+                encoder,
+                execute,
+            )
         }
-    }
+    }.parent().unwrap()
 }
 
 pub fn encode_basic_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
+    get_encoder: impl FnOnce(T) -> proper_ma_api::BasicOrderDetailEncoder<T>,
+    parent_encoder: T,
     o: &BasicOrderDetail,
-    basic_order_detail_encoder: proper_ma_api::BasicOrderDetailEncoder<T>,
-) -> proper_ma_api::BasicOrderDetailEncoder<T> {
+) -> T {
     unimplemented!()   
 }

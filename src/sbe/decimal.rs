@@ -1,10 +1,10 @@
 
 pub fn encode_decimal<'a, P: Default + proper_ma_api::Writer<'a>>(
-    encoding_fn: impl FnOnce(P) -> proper_ma_api::DecEncoder<P>,
+    get_encoder: impl FnOnce(P) -> proper_ma_api::DecEncoder<P>,
     parent_encoder: P,
     d: &rust_decimal::Decimal,
 ) -> P {
-    let mut encoder = encoding_fn(parent_encoder);
+    let mut encoder = get_encoder(parent_encoder);
     encoder.mantissa(d.mantissa() as i64);
     encoder.exponent(d.scale() as i8);
     encoder.parent().unwrap()
