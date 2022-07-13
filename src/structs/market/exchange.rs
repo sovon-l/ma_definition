@@ -40,6 +40,16 @@ impl std::convert::From<proper_ma_api::Exchange> for Exchange {
     }
 }
 
+impl std::convert::From<&proper_ma_api::Exchange> for Exchange {
+    fn from(exchange: &proper_ma_api::Exchange) -> Self {
+        match exchange {
+            proper_ma_api::Exchange::binance => Self::Binance,
+            proper_ma_api::Exchange::ftx => Self::Ftx,
+            _ => unimplemented!(),
+        }
+    }
+}
+
 impl std::convert::Into<proper_ma_api::Exchange> for Exchange {
     fn into(self) -> proper_ma_api::Exchange {
         match self {

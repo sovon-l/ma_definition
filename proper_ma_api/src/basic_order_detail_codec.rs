@@ -8,7 +8,7 @@ use DecEncoder as AmountEncoder;
 use DecDecoder as PriceDecoder;
 use DecDecoder as AmountDecoder;
 
-pub const ENCODED_LENGTH: usize = 43;
+pub const ENCODED_LENGTH: usize = 47;
 
 pub mod encoder {
     use super::*;
@@ -79,21 +79,21 @@ pub mod encoder {
 
         /// primitive field 'expiryTime'
         /// - min value: 0
-        /// - max value: 4294967294
-        /// - null value: 4294967295
+        /// - max value: -2
+        /// - null value: -1
         /// - characterEncoding: null
         /// - semanticType: null
         /// - encodedOffset: 38
-        /// - encodedLength: 4
+        /// - encodedLength: 8
         #[inline]
-        pub fn expiry_time(&mut self, value: u32) {
+        pub fn expiry_time(&mut self, value: u64) {
             let offset = self.offset + 38;
-            self.get_buf_mut().put_u32_at(offset, value);
+            self.get_buf_mut().put_u64_at(offset, value);
         }
 
         #[inline]
         pub fn order_options(&mut self, value: OrderOptions) {
-            let offset = self.offset + 42;
+            let offset = self.offset + 46;
             self.get_buf_mut().put_u8_at(offset, value.0)
         }
 
@@ -161,11 +161,11 @@ pub mod decoder {
             self.get_buf().get_u8_at(self.offset + 37).into()
         }
 
-        /// primitive field - 'OPTIONAL' { null_value: '4294967295' }
+        /// primitive field - 'OPTIONAL' { null_value: '-1' }
         #[inline]
-        pub fn expiry_time(&self) -> Option<u32> {
-            let value = self.get_buf().get_u32_at(self.offset + 38);
-            if value == 0xffffffff_u32 {
+        pub fn expiry_time(&self) -> Option<u64> {
+            let value = self.get_buf().get_u64_at(self.offset + 38);
+            if value == 0xffffffffffffffff_u64 {
                 None
             } else {
                 Some(value)
@@ -174,7 +174,7 @@ pub mod decoder {
 
         #[inline]
         pub fn order_options(&self) -> OrderOptions {
-            OrderOptions::new(self.get_buf().get_u8_at(self.offset + 42))
+            OrderOptions::new(self.get_buf().get_u8_at(self.offset + 46))
         }
 
     }

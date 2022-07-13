@@ -10,6 +10,15 @@ pub fn encode_decimal<'a, P: Default + proper_ma_api::Writer<'a>>(
     encoder.parent().unwrap()
 }
 
-pub fn decode_decimal<'a, P: Default + proper_ma_api::Reader<'a>>(decoder: &mut proper_ma_api::DecDecoder<P>) -> rust_decimal::Decimal {
-    rust_decimal::Decimal::new(decoder.mantissa(), decoder.exponent() as u32)
+// pub fn decode_decimal<'a, P: Default + proper_ma_api::Reader<'a>>(decoder: &mut proper_ma_api::DecDecoder<P>) -> rust_decimal::Decimal {
+//     rust_decimal::Decimal::new(decoder.mantissa(), decoder.exponent() as u32)
+// }
+
+pub fn decode_decimal<'a, P: Default + proper_ma_api::Reader<'a>>(
+    get_decoder: impl FnOnce(P) -> proper_ma_api::DecDecoder<P>,
+    parent_decoder: P,
+) -> (rust_decimal::Decimal, P) {
+    let mut decoder = get_decoder(parent_decoder);
+    let d = rust_decimal::Decimal::new(decoder.mantissa(), decoder.exponent() as u32);
+    (d, decoder.parent().unwrap())
 }

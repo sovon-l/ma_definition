@@ -53,12 +53,7 @@
     <sbe:message name="orderDetailMsg" id="12">
         <field name="orderDetail" id="1" type="orderDetail"/>
     </sbe:message>
-    <sbe:message name="orderStatusMsg" id="13">
-        <field name="filledAmount" id="1" type="dec"/>
-        <field name="paidAmount" id="2" type="dec"/>
-        <field name="commission" id="3" type="dec"/>
-        <field name="orderStatus" id="4" type="orderStatus"/>
-        <field name="lastUpdate" id="5" type="uint64"/>
-        <field name="lastExchangeUpdate" id="6" type="uint64"/>
+    <sbe:message name="orderProgressMsg" id="13">
+        <field name="orderProgress" id="1" type="orderProgress"/>
     </sbe:message>
 </sbe:messageSchema>

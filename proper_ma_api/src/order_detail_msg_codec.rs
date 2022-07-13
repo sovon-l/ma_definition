@@ -3,7 +3,7 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
-pub const SBE_BLOCK_LENGTH: u16 = 53;
+pub const SBE_BLOCK_LENGTH: u16 = 57;
 pub const SBE_TEMPLATE_ID: u16 = 12;
 pub const SBE_SCHEMA_ID: u16 = 1;
 pub const SBE_SCHEMA_VERSION: u16 = 1;

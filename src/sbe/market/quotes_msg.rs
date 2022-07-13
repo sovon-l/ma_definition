@@ -27,9 +27,11 @@ pub fn marshal_quotes_msg(q: Quotes) -> Vec<u8> {
         proper_ma_api::message_header_codec::ENCODED_LENGTH,
     );
     quotes_msg = quotes_msg.header(0).parent().unwrap();
-    let mut symbol_e = quotes_msg.instrument_encoder();
-    crate::sbe::market::instrument::encode_instrument(symbol, &mut symbol_e);
-    quotes_msg = symbol_e.parent().unwrap();
+    quotes_msg = crate::sbe::market::instrument::encode_instrument(
+        proper_ma_api::QuoteMsgEncoder::instrument_encoder,
+        quotes_msg,
+        &symbol,
+    );
 
     quotes_msg.market_timestamp(market_timestamp);
 
@@ -68,9 +70,10 @@ pub fn unmarshal_quotes_msg(v: &[u8]) -> Quotes {
     let header = proper_ma_api::MessageHeaderDecoder::default().wrap(buf, 0);
     quotes_msg_d = quotes_msg_d.header(header);
 
-    let mut symbol_d = quotes_msg_d.instrument_decoder();
-    let symbol = crate::sbe::market::instrument::decode_instrument(&mut symbol_d);
-    quotes_msg_d = symbol_d.parent().unwrap();
+    let (symbol, quotes_msg_d) = crate::sbe::market::instrument::decode_instrument(
+        proper_ma_api::QuoteMsgDecoder::instrument_decoder,
+        quotes_msg_d,
+    );
 
     let market_timestamp = quotes_msg_d.market_timestamp();
 
@@ -80,21 +83,27 @@ pub fn unmarshal_quotes_msg(v: &[u8]) -> Quotes {
     let is_snapshot = orderbook_flags_d.get_is_snapshot();
     let is_l1 = orderbook_flags_d.get_l1();
 
-    let mut depths_d = quotes_msg_d.depths_decoder();
-    let depths_count = depths_d.count();
+    let mut depths_d = Some(quotes_msg_d.depths_decoder());
+    let depths_count = depths_d.as_ref().unwrap().count();
     let mut depths = Vec::with_capacity(depths_count as usize);
     for _ in 0..depths_count {
-        depths_d.advance().unwrap();
+        let mut depths_decoder = depths_d.take().unwrap();
 
-        let mut price_d = depths_d.price_decoder();
-        let price = crate::sbe::decimal::decode_decimal(&mut price_d);
-        depths_d = price_d.parent().unwrap();
+        depths_decoder.advance().unwrap();
 
-        let mut size_d = depths_d.size_decoder();
-        let size = crate::sbe::decimal::decode_decimal(&mut size_d);
-        depths_d = size_d.parent().unwrap();
+        let (price, depths_decoder) = crate::sbe::decimal::decode_decimal(
+            proper_ma_api::DepthsDecoder::price_decoder,
+            depths_decoder,
+        );
+
+        let (size, depths_decoder) = crate::sbe::decimal::decode_decimal(
+            proper_ma_api::DepthsDecoder::size_decoder,
+            depths_decoder,
+        );
 
         depths.push(Depth { price, size });
+        
+        depths_d = Some(depths_decoder);
     }
     
     Quotes {

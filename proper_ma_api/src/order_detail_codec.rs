@@ -3,7 +3,7 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
-pub const ENCODED_LENGTH: usize = 53;
+pub const ENCODED_LENGTH: usize = 57;
 
 pub mod encoder {
     use super::*;

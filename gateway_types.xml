@@ -24,15 +24,17 @@
             <validValue name="IOC">1</validValue>
             <validValue name="FOK">2</validValue>
         </enum>
-        <type name="expiryTime" primitiveType="uint32" presence="optional"/>
+        <type name="expiryTime" primitiveType="uint64" presence="optional"/>
         <set name="orderOptions" encodingType="uint8">
             <choice name="reduceOnly">0</choice>
+            <choice name="postOnly">1</choice>
         </set>
     </composite>
     <composite name="simpleOrderDetail">
         <ref name="execute" type="basicOrderDetail"/>
-        <set name="simpleOrderFlag" encodingType="uint8" presence="optional">
-            <choice name="isStopLoss">0</choice>
+        <set name="simpleOrderFlag" encodingType="uint8">
+            <choice name="isTrigger">0</choice>
+            <choice name="isStopLoss">1</choice> <!-- else take profit-->
         </set>
         <ref name="trigger" type="dec" presence="optional"/>
     </composite>
@@ -56,5 +58,13 @@
             <validValue name="UnexpectedExchangeError">6</validValue>
             <validValue name="UnexpectedGatewayError">7</validValue>
         </enum>
+    </composite>
+    <composite name="orderProgress">
+        <ref name="filledAmount" type="dec"/>
+        <ref name="paidAmount" type="dec"/>
+        <ref name="commission" type="dec"/>
+        <ref name="orderStatus" type="orderStatus"/>
+        <type name="lastUpdate" primitiveType="uint64"/>
+        <type name="lastExchangeUpdate" primitiveType="uint64"/>
     </composite>
 </types>
