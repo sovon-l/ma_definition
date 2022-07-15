@@ -1,7 +1,6 @@
-
 use crate::structs::market::instrument::*;
 
-pub fn encode_instrument<'a, T:proper_ma_api::Writer<'a> + Default>(
+pub fn encode_instrument<'a, T: proper_ma_api::Writer<'a> + Default>(
     get_encoder: impl FnOnce(T) -> proper_ma_api::InstrumentEncoder<T>,
     parent_encoder: T,
     s: &Instrument,

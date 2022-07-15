@@ -1,4 +1,3 @@
-
 use crate::structs::market::trades::*;
 
 pub fn marshal_trades_msg(ts: Trades) -> Vec<u8> {

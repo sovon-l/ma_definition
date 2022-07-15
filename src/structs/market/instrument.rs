@@ -47,7 +47,8 @@ impl std::str::FromStr for Instrument {
             return Err(());
         }
         Ok(Instrument {
-            exchange: crate::structs::market::exchange::Exchange::from_str(splits[0]).map_err(|_| ())?,
+            exchange: crate::structs::market::exchange::Exchange::from_str(splits[0])
+                .map_err(|_| ())?,
             base: crate::util::symbol::str_to_asset(parts[0]),
             quote: crate::util::symbol::str_to_asset(parts[1]),
             instrument_type: if tokens.len() < 2 {

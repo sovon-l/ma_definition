@@ -1,7 +1,6 @@
-
 use crate::structs::gateway::order_progress::*;
 
-pub fn marshal_order_progress_msg(o: OrderProgress) -> Vec<u8> {
+pub fn marshal_order_progress_msg(o: &OrderProgress) -> Vec<u8> {
     let mut buffer = vec![
         0u8;
         proper_ma_api::message_header_codec::ENCODED_LENGTH
@@ -30,7 +29,7 @@ pub fn encode_order_progress<'a, T: proper_ma_api::Writer<'a> + Default>(
     o: &OrderProgress,
 ) -> T {
     let mut encoder = get_encoder(parent_encoder);
-    
+
     encoder = crate::sbe::decimal::encode_decimal(
         proper_ma_api::OrderProgressEncoder::filled_amount_encoder,
         encoder,
@@ -43,28 +42,26 @@ pub fn encode_order_progress<'a, T: proper_ma_api::Writer<'a> + Default>(
         &o.paid_amount,
     );
 
-    use proper_ma_api::OrderStatusConcrete;
     use proper_ma_api::ErrorCode;
+    use proper_ma_api::OrderStatusConcrete;
     let mut order_status_encoder = encoder.order_status_encoder();
     let (order_status_concrete, error_code) = match &o.order_status {
         OrderStatus::Submitting => (OrderStatusConcrete::Submitting, None),
         OrderStatus::Submitted => (OrderStatusConcrete::Submitted, None),
         OrderStatus::Cancelling => (OrderStatusConcrete::Cancelling, None),
-        OrderStatus::Finished(err) => {
-            (
-                OrderStatusConcrete::Finished,
-                err.as_ref().map(|e| match e {
-                    ExecuteErrorCode::InsufficientFund => ErrorCode::InsufficientFund,
-                    ExecuteErrorCode::FailPostOnly => ErrorCode::FailPostOnly,
-                    ExecuteErrorCode::Timeout => ErrorCode::Timeout,
-                    ExecuteErrorCode::GatewayTooManyRequests => ErrorCode::GatewayTooManyRequests,
-                    ExecuteErrorCode::ExchangeTooManyRequests => ErrorCode::ExchangeTooManyRequests,
-                    ExecuteErrorCode::ExchangeConnectionError => ErrorCode::ExchangeConnectionError,
-                    ExecuteErrorCode::UnexpectedExchangeError => ErrorCode::UnexpectedExchangeError,
-                    ExecuteErrorCode::UnexpectedGatewayError => ErrorCode::UnexpectedGatewayError,
-                })
-            )
-        },
+        OrderStatus::Finished(err) => (
+            OrderStatusConcrete::Finished,
+            err.as_ref().map(|e| match e {
+                ExecuteErrorCode::InsufficientFund => ErrorCode::InsufficientFund,
+                ExecuteErrorCode::FailPostOnly => ErrorCode::FailPostOnly,
+                ExecuteErrorCode::Timeout => ErrorCode::Timeout,
+                ExecuteErrorCode::GatewayTooManyRequests => ErrorCode::GatewayTooManyRequests,
+                ExecuteErrorCode::ExchangeTooManyRequests => ErrorCode::ExchangeTooManyRequests,
+                ExecuteErrorCode::ExchangeConnectionError => ErrorCode::ExchangeConnectionError,
+                ExecuteErrorCode::UnexpectedExchangeError => ErrorCode::UnexpectedExchangeError,
+                ExecuteErrorCode::UnexpectedGatewayError => ErrorCode::UnexpectedGatewayError,
+            }),
+        ),
     };
     order_status_encoder.order_status_concrete(order_status_concrete);
     if let Some(error_code) = error_code {
@@ -86,8 +83,9 @@ pub fn encode_order_progress<'a, T: proper_ma_api::Writer<'a> + Default>(
     encoder.parent().unwrap()
 }
 
-
-pub fn unmarshal_order_progress_msg(msg: &[u8]) -> Result<OrderProgress, Box<dyn std::error::Error>> {
+pub fn unmarshal_order_progress_msg(
+    msg: &[u8],
+) -> Result<OrderProgress, Box<dyn std::error::Error>> {
     let mut order_progress_msg_decoder = proper_ma_api::OrderProgressMsgDecoder::default();
     let buf = proper_ma_api::ReadBuf::new(msg);
 
@@ -125,8 +123,8 @@ pub fn decode_order_progress<'a, T: proper_ma_api::Reader<'a> + Default>(
 
     let mut order_status_decoder = decoder.order_status_decoder();
 
-    use proper_ma_api::OrderStatusConcrete;
     use proper_ma_api::ErrorCode;
+    use proper_ma_api::OrderStatusConcrete;
     let order_status = match order_status_decoder.order_status_concrete() {
         OrderStatusConcrete::Submitting => OrderStatus::Submitting,
         OrderStatusConcrete::Submitted => OrderStatus::Submitted,
@@ -138,13 +136,19 @@ pub fn decode_order_progress<'a, T: proper_ma_api::Reader<'a> + Default>(
                 ErrorCode::FailPostOnly => Some(ExecuteErrorCode::FailPostOnly),
                 ErrorCode::Timeout => Some(ExecuteErrorCode::Timeout),
                 ErrorCode::GatewayTooManyRequests => Some(ExecuteErrorCode::GatewayTooManyRequests),
-                ErrorCode::ExchangeTooManyRequests => Some(ExecuteErrorCode::ExchangeTooManyRequests),
-                ErrorCode::ExchangeConnectionError => Some(ExecuteErrorCode::ExchangeConnectionError),
-                ErrorCode::UnexpectedExchangeError => Some(ExecuteErrorCode::UnexpectedExchangeError),
+                ErrorCode::ExchangeTooManyRequests => {
+                    Some(ExecuteErrorCode::ExchangeTooManyRequests)
+                }
+                ErrorCode::ExchangeConnectionError => {
+                    Some(ExecuteErrorCode::ExchangeConnectionError)
+                }
+                ErrorCode::UnexpectedExchangeError => {
+                    Some(ExecuteErrorCode::UnexpectedExchangeError)
+                }
                 ErrorCode::UnexpectedGatewayError => Some(ExecuteErrorCode::UnexpectedGatewayError),
                 _ => None,
             })
-        },
+        }
         _ => panic!(),
     };
     let mut decoder = order_status_decoder.parent().unwrap();
@@ -158,7 +162,7 @@ pub fn decode_order_progress<'a, T: proper_ma_api::Reader<'a> + Default>(
             Some(rt)
         }
     };
-    
+
     (
         OrderProgress {
             filled_amount,
@@ -168,6 +172,30 @@ pub fn decode_order_progress<'a, T: proper_ma_api::Reader<'a> + Default>(
             last_update,
             last_exchange_update,
         },
-        decoder.parent().unwrap()
+        decoder.parent().unwrap(),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rust_decimal::Decimal;
+
+    #[test]
+    fn encode_decode() {
+        let order_progresses = vec![OrderProgress {
+            filled_amount: Decimal::new(1, 2),
+            paid_amount: Decimal::new(2, 2),
+            commission: Decimal::new(3, 2),
+            order_status: OrderStatus::Submitting,
+            last_update: 1,
+            last_exchange_update: Some(2),
+        }];
+
+        for order_progress in order_progresses.iter() {
+            let msg = marshal_order_progress_msg(&order_progress);
+            let p2 = unmarshal_order_progress_msg(&msg).unwrap();
+            assert_eq!(*order_progress, p2);
+        }
+    }
 }

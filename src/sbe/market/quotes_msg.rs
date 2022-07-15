@@ -1,4 +1,3 @@
-
 use crate::structs::market::quotes::*;
 
 pub fn marshal_quotes_msg(q: Quotes) -> Vec<u8> {
@@ -102,10 +101,10 @@ pub fn unmarshal_quotes_msg(v: &[u8]) -> Quotes {
         );
 
         depths.push(Depth { price, size });
-        
+
         depths_d = Some(depths_decoder);
     }
-    
+
     Quotes {
         symbol,
         market_timestamp,

@@ -12,4 +12,3 @@ pub struct Trade {
     pub timestamp: u64,
     // tradeId: u32,
 }
-

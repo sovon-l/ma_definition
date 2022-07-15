@@ -1,4 +1,3 @@
-
 pub fn encode_decimal<'a, P: Default + proper_ma_api::Writer<'a>>(
     get_encoder: impl FnOnce(P) -> proper_ma_api::DecEncoder<P>,
     parent_encoder: P,

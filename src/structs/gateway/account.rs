@@ -4,6 +4,12 @@ pub struct Account {
     pub context: String, // TODO: enum? u8?
 }
 
+impl std::fmt::Display for Account {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}_{}", self.exchange, self.context)
+    }
+}
+
 impl std::str::FromStr for Account {
     type Err = Box<dyn std::error::Error>;
 
@@ -12,7 +18,10 @@ impl std::str::FromStr for Account {
         let exchange = parts.next().ok_or("missing exchange")?;
         let context = parts.next().ok_or("missing context")?;
         let exchange = crate::structs::market::exchange::Exchange::from_str(exchange)?;
-        Ok(Account { exchange, context: context.to_string() })
+        Ok(Account {
+            exchange,
+            context: context.to_string(),
+        })
     }
 }
 

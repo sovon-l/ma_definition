@@ -1,4 +1,3 @@
-
 pub fn str_to_asset(s: &str) -> [u8; 6] {
     let mut rt = [0u8; 6];
     rt[..s.len()].copy_from_slice(s.to_lowercase().as_bytes());

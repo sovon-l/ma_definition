@@ -1,7 +1,6 @@
-
 use crate::structs::gateway::order_detail::*;
 
-pub fn marshal_order_detail_msg(o: OrderDetail) -> Vec<u8> {
+pub fn marshal_order_detail_msg(o: &OrderDetail) -> Vec<u8> {
     let mut buffer = vec![
         0u8;
         proper_ma_api::message_header_codec::ENCODED_LENGTH
@@ -31,13 +30,11 @@ pub fn encode_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
 ) -> T {
     let encoder = get_encoder(parent_encoder);
     match o {
-        OrderDetail::SimpleOrder(s) => {     
-            encode_simple_order_detail(
-                proper_ma_api::OrderDetailEncoder::simple_order_detail_encoder,
-                encoder,
-                s,
-            )
-        },
+        OrderDetail::SimpleOrder(s) => encode_simple_order_detail(
+            proper_ma_api::OrderDetailEncoder::simple_order_detail_encoder,
+            encoder,
+            s,
+        ),
         // OrderDetail::OCO(o1, o2) => {
         //     let mut oco_order_detail_encoder = order_detail_encoder.oco_order_detail_encoder();
         //     encode_simple_order_detail(&mut oco_order_detail_encoder, o1, o2);
@@ -45,7 +42,9 @@ pub fn encode_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
         // OrderDetail::OTO(s1, s2) => encode_oto_order_detail(order_detail_encoder, s1, s2),
         // OrderDetail::Trailing(s) => encode_trailing_order_detail(order_detail_encoder, s),
         // OrderDetail::Adaptive(s) => encode_adaptive_order_detail(order_detail_encoder, s),
-    }.parent().unwrap()
+    }
+    .parent()
+    .unwrap()
 }
 
 pub fn encode_simple_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
@@ -55,14 +54,16 @@ pub fn encode_simple_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
 ) -> T {
     let mut encoder = get_encoder(parent_encoder);
     match o {
-        SimpleOrderDetail::BasicOrder(basic_order_detail) => {
-            encode_basic_order_detail(
-                proper_ma_api::SimpleOrderDetailEncoder::execute_encoder,
-                encoder,
-                basic_order_detail,
-            )
-        }
-        SimpleOrderDetail::TriggerOrder { is_stop_loss, trigger, execute } => {
+        SimpleOrderDetail::BasicOrder(basic_order_detail) => encode_basic_order_detail(
+            proper_ma_api::SimpleOrderDetailEncoder::execute_encoder,
+            encoder,
+            basic_order_detail,
+        ),
+        SimpleOrderDetail::TriggerOrder {
+            is_stop_loss,
+            trigger,
+            execute,
+        } => {
             encoder = crate::sbe::decimal::encode_decimal(
                 proper_ma_api::SimpleOrderDetailEncoder::trigger_encoder,
                 encoder,
@@ -73,14 +74,16 @@ pub fn encode_simple_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
             simple_order_flag_encoder.set_is_trigger(true);
             simple_order_flag_encoder.set_is_stop_loss(*is_stop_loss);
             encoder.simple_order_flag(simple_order_flag_encoder);
-            
+
             encode_basic_order_detail(
                 proper_ma_api::SimpleOrderDetailEncoder::execute_encoder,
                 encoder,
                 execute,
             )
         }
-    }.parent().unwrap()
+    }
+    .parent()
+    .unwrap()
 }
 
 pub fn encode_basic_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
@@ -91,7 +94,7 @@ pub fn encode_basic_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
     let mut encoder = get_encoder(parent_encoder);
 
     match o {
-        BasicOrderDetail::Limit{
+        BasicOrderDetail::Limit {
             instrument,
             price,
             amount,
@@ -102,21 +105,21 @@ pub fn encode_basic_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
             encoder.order_type(proper_ma_api::OrderType::limit);
 
             encoder = crate::sbe::market::instrument::encode_instrument(
-                proper_ma_api::BasicOrderDetailEncoder::instrument_encoder, 
+                proper_ma_api::BasicOrderDetailEncoder::instrument_encoder,
                 encoder,
-                instrument
+                instrument,
             );
 
             encoder = crate::sbe::decimal::encode_decimal(
                 proper_ma_api::BasicOrderDetailEncoder::price_encoder,
                 encoder,
-                price
+                price,
             );
 
             encoder = crate::sbe::decimal::encode_decimal(
                 proper_ma_api::BasicOrderDetailEncoder::amount_encoder,
                 encoder,
-                amount
+                amount,
             );
 
             match time_in_force {
@@ -125,37 +128,37 @@ pub fn encode_basic_order_detail<'a, T: proper_ma_api::Writer<'a> + Default>(
                         encoder.expiry_time(*time);
                     }
                     encoder.time_in_force(proper_ma_api::TimeInForce::GoodTill);
-                },
+                }
                 TimeInForce::ImmediateOrCancel => {
                     encoder.time_in_force(proper_ma_api::TimeInForce::IOC);
-                },
+                }
                 TimeInForce::FillOrKill => {
                     encoder.time_in_force(proper_ma_api::TimeInForce::FOK);
-                },
+                }
             }
 
             let mut order_options_encoder = proper_ma_api::OrderOptions::default();
             order_options_encoder.set_reduce_only(*reduce_only);
             order_options_encoder.set_post_only(*post_only);
             encoder.order_options(order_options_encoder);
-        },
+        }
         BasicOrderDetail::Market {
             instrument,
             amount,
             reduce_only,
         } => {
             encoder.order_type(proper_ma_api::OrderType::market);
-            
+
             encoder = crate::sbe::market::instrument::encode_instrument(
-                proper_ma_api::BasicOrderDetailEncoder::instrument_encoder, 
+                proper_ma_api::BasicOrderDetailEncoder::instrument_encoder,
                 encoder,
-                instrument
+                instrument,
             );
 
             encoder = crate::sbe::decimal::encode_decimal(
                 proper_ma_api::BasicOrderDetailEncoder::amount_encoder,
                 encoder,
-                amount
+                amount,
             );
 
             let mut order_options_encoder = proper_ma_api::OrderOptions::default();
@@ -191,10 +194,7 @@ pub fn decode_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
         proper_ma_api::OrderDetailDecoder::simple_order_detail_decoder,
         decoder,
     );
-    (
-        OrderDetail::SimpleOrder(rt),
-        decoder.parent().unwrap()
-    )
+    (OrderDetail::SimpleOrder(rt), decoder.parent().unwrap())
 }
 
 pub fn decode_simple_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
@@ -211,7 +211,7 @@ pub fn decode_simple_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
             decoder,
         );
         let (trigger, mut decoder) = crate::sbe::decimal::decode_decimal(
-            proper_ma_api::SimpleOrderDetailDecoder::trigger_decoder, 
+            proper_ma_api::SimpleOrderDetailDecoder::trigger_decoder,
             decoder,
         );
         (
@@ -220,7 +220,7 @@ pub fn decode_simple_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
                 is_stop_loss: simple_order_flag.get_is_stop_loss(),
                 execute,
             },
-            decoder.parent().unwrap()
+            decoder.parent().unwrap(),
         )
     } else {
         let (execute, mut decoder) = decode_basic_order_detail(
@@ -229,7 +229,7 @@ pub fn decode_simple_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
         );
         (
             SimpleOrderDetail::BasicOrder(execute),
-            decoder.parent().unwrap()
+            decoder.parent().unwrap(),
         )
     }
 }
@@ -241,32 +241,34 @@ pub fn decode_basic_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
     let decoder = get_decoder(parent_decoder);
 
     let (amount, decoder) = crate::sbe::decimal::decode_decimal(
-        proper_ma_api::BasicOrderDetailDecoder::amount_decoder, 
+        proper_ma_api::BasicOrderDetailDecoder::amount_decoder,
         decoder,
     );
 
     let order_options = decoder.order_options();
 
     let (instrument, mut decoder) = crate::sbe::market::instrument::decode_instrument(
-        proper_ma_api::BasicOrderDetailDecoder::instrument_decoder, 
+        proper_ma_api::BasicOrderDetailDecoder::instrument_decoder,
         decoder,
     );
 
     match decoder.order_type() {
         proper_ma_api::OrderType::limit => {
             let (price, mut decoder) = crate::sbe::decimal::decode_decimal(
-                proper_ma_api::BasicOrderDetailDecoder::price_decoder, 
+                proper_ma_api::BasicOrderDetailDecoder::price_decoder,
                 decoder,
             );
             let time_in_force = decoder.time_in_force();
-            
+
             (
                 BasicOrderDetail::Limit {
                     instrument,
                     price,
                     amount,
                     time_in_force: match time_in_force {
-                        proper_ma_api::TimeInForce::GoodTill => TimeInForce::GoodTill(decoder.expiry_time()),
+                        proper_ma_api::TimeInForce::GoodTill => {
+                            TimeInForce::GoodTill(decoder.expiry_time())
+                        }
                         proper_ma_api::TimeInForce::IOC => TimeInForce::ImmediateOrCancel,
                         proper_ma_api::TimeInForce::FOK => TimeInForce::FillOrKill,
                         _ => TimeInForce::GoodTill(None),
@@ -274,19 +276,62 @@ pub fn decode_basic_order_detail<'a, T: proper_ma_api::Reader<'a> + Default>(
                     reduce_only: order_options.get_reduce_only(),
                     post_only: order_options.get_post_only(),
                 },
-                decoder.parent().unwrap()
+                decoder.parent().unwrap(),
             )
-        },
-        proper_ma_api::OrderType::market => {
-            (
-                BasicOrderDetail::Market {
-                    instrument,
-                    amount,
-                    reduce_only: order_options.get_reduce_only(),
-                },
-                decoder.parent().unwrap()
-            )
-        },
+        }
+        proper_ma_api::OrderType::market => (
+            BasicOrderDetail::Market {
+                instrument,
+                amount,
+                reduce_only: order_options.get_reduce_only(),
+            },
+            decoder.parent().unwrap(),
+        ),
         _ => panic!(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rust_decimal::Decimal;
+    use std::str::FromStr;
+
+    #[test]
+    fn encode_decode() {
+        let order_details = vec![
+            OrderDetail::SimpleOrder(SimpleOrderDetail::TriggerOrder {
+                trigger: Decimal::new(1, 2),
+                is_stop_loss: true,
+                execute: BasicOrderDetail::Limit {
+                    instrument: crate::structs::market::instrument::Instrument::from_str(
+                        "binance:btc_usdt",
+                    )
+                    .unwrap(),
+                    price: Decimal::new(1, 2),
+                    amount: Decimal::new(1, 2),
+                    time_in_force: TimeInForce::GoodTill(Some(1)),
+                    reduce_only: false,
+                    post_only: false,
+                },
+            }),
+            OrderDetail::SimpleOrder(SimpleOrderDetail::BasicOrder(BasicOrderDetail::Limit {
+                instrument: crate::structs::market::instrument::Instrument::from_str(
+                    "binance:btc_usdt",
+                )
+                .unwrap(),
+                price: Decimal::new(1, 2),
+                amount: Decimal::new(1, 2),
+                time_in_force: TimeInForce::GoodTill(Some(1)),
+                reduce_only: false,
+                post_only: false,
+            })),
+        ];
+
+        for order_detail in order_details.iter() {
+            let msg = marshal_order_detail_msg(&order_detail);
+            let unmarshaled = unmarshal_order_detail_msg(&msg).unwrap();
+            assert_eq!(*order_detail, unmarshaled);
+        }
     }
 }

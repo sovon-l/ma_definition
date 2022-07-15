@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone)]
 pub struct GatewayOrder {
     pub upstream_order_id: u64,

@@ -2,7 +2,7 @@ use rust_decimal::Decimal;
 
 // TODO: implement contingent orders / price algo orders
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OrderDetail {
     SimpleOrder(SimpleOrderDetail),
     // OCO(SimpleOrderDetail, SimpleOrderDetail),
@@ -11,7 +11,7 @@ pub enum OrderDetail {
     // TODO: Adaptive
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SimpleOrderDetail {
     BasicOrder(BasicOrderDetail),
     TriggerOrder {
@@ -21,7 +21,7 @@ pub enum SimpleOrderDetail {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BasicOrderDetail {
     Limit {
         instrument: crate::structs::market::instrument::Instrument,
@@ -38,7 +38,7 @@ pub enum BasicOrderDetail {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TimeInForce {
     GoodTill(Option<u64>), // None: GTC; with value: auto cancel after (u64)us
     ImmediateOrCancel,

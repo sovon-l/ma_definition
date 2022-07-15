@@ -1,6 +1,6 @@
 use rust_decimal::Decimal;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OrderProgress {
     pub filled_amount: Decimal,
     pub paid_amount: Decimal,
@@ -17,7 +17,10 @@ impl Default for OrderProgress {
             paid_amount: rust_decimal::Decimal::ZERO,
             commission: rust_decimal::Decimal::ZERO,
             order_status: OrderStatus::Submitting,
-            last_update: chrono::offset::Utc::now().timestamp_nanos().try_into().unwrap(),
+            last_update: chrono::offset::Utc::now()
+                .timestamp_nanos()
+                .try_into()
+                .unwrap(),
             last_exchange_update: None,
         }
     }
@@ -25,7 +28,10 @@ impl Default for OrderProgress {
 
 impl OrderProgress {
     pub fn update(&mut self) {
-        self.last_update = chrono::offset::Utc::now().timestamp_nanos().try_into().unwrap();
+        self.last_update = chrono::offset::Utc::now()
+            .timestamp_nanos()
+            .try_into()
+            .unwrap();
     }
 }
 
