@@ -2,6 +2,7 @@
 pub enum Exchange {
     Binance,
     Ftx,
+    Nil
 }
 
 // ----- string conv -----
@@ -11,6 +12,7 @@ impl std::fmt::Display for Exchange {
         match self {
             Self::Binance => write!(f, "binance"),
             Self::Ftx => write!(f, "ftx"),
+            _ => Err(std::fmt::Error),
         }
     }
 }
@@ -54,6 +56,7 @@ impl std::convert::Into<proper_ma_api::Exchange> for Exchange {
         match self {
             Self::Binance => proper_ma_api::Exchange::binance,
             Self::Ftx => proper_ma_api::Exchange::ftx,
+            _ => unimplemented!(),
         }
     }
 }
